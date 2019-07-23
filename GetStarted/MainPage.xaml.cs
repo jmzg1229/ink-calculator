@@ -3,6 +3,7 @@
 using MyScript.IInk.UIReferenceImplementation.UserControls;
 using System;
 using System.Linq;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -12,7 +13,7 @@ namespace MyScript.IInk.GetStarted
     public sealed partial class MainPage : Page
     {
         // Defines the type of content (possible values are: "Text Document", "Text", "Diagram", "Math", and "Drawing")
-        private const string PartType = "Text Document";
+        private const string PartType = "Math";
 
         private Engine _engine;
 
@@ -44,7 +45,7 @@ namespace MyScript.IInk.GetStarted
             UcEditor.Engine = _engine;
 
             // Force pointer to be a pen, for an automatic detection, set InputMode to AUTO
-            SetInputMode(InputMode.PEN);
+            SetInputMode(InputMode.AUTO);
 
             NewFile();
         }
@@ -70,8 +71,17 @@ namespace MyScript.IInk.GetStarted
             {
                 var supportedStates = Editor.GetSupportedTargetConversionStates(null);
 
-                if ( (supportedStates != null) && (supportedStates.Count() > 0) )
-                  Editor.Convert(null, supportedStates[0]);
+                if ((supportedStates != null) && (supportedStates.Count() > 0))
+                {
+                    Editor.Convert(null, supportedStates[0]);
+                    ContentBlock rblock = Editor.GetRootBlock();
+                    var supMimeTypes = Editor.GetSupportedExportMimeTypes(rblock);
+                    string mimeTypes = string.Join(", ", supMimeTypes.ToArray());
+                    // For Math: LATEX, MATHML, JIIX, JPEG, PNG
+                    var result = Editor.Export_(rblock, MimeType.LATEX);
+                    LogTextBlock.Text = result.ToString();
+                    
+                }
             }
             catch (Exception ex)
             {
@@ -86,6 +96,7 @@ namespace MyScript.IInk.GetStarted
             autoToggleButton.IsChecked = (inputMode == InputMode.AUTO);
             touchPointerToggleButton.IsChecked = (inputMode == InputMode.TOUCH);
             editToggleButton.IsChecked = (inputMode == InputMode.PEN);
+            // LogTextBlock.Text = inputMode.ToString();
         }
 
         private void AppBar_TouchPointerButton_Click(object sender, RoutedEventArgs e)

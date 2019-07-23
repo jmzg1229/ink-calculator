@@ -7,13 +7,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Uc="using:MyScript.IInk.UIReferenceImplementation.UserControls"
     mc:Ignorable="d">
-    
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="auto"></RowDefinition>
-      <RowDefinition Height="*"></RowDefinition>
-    </Grid.RowDefinitions>
-    <CommandBar>            
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="750"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <CommandBar VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
             <AppBarButton Icon="Undo" Label="Undo" Click="AppBar_UndoButton_Click"/>
             <AppBarButton Icon="Redo" Label="Redo" Click="AppBar_RedoButton_Click"/>
             <AppBarButton Icon="Delete" Label="Clear" Click="AppBar_ClearButton_Click"/>
@@ -25,19 +29,31 @@
             </CommandBar.Content>
         </CommandBar>
 
-    <Uc:EditorUserControl Grid.Row="1"  x:Name="UcEditor"></Uc:EditorUserControl>
-      
-    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8">
-      <ToggleButton Margin="2" x:Name="editToggleButton" Click="AppBar_EditButton_Click">
-        <TextBlock HorizontalAlignment="Center" Text="Pen" />
-      </ToggleButton>
-      <ToggleButton Margin="2" x:Name="touchPointerToggleButton" Click="AppBar_TouchPointerButton_Click">
-        <TextBlock HorizontalAlignment="Center" Text="Touch" />
-      </ToggleButton>
-      <ToggleButton Margin="2" x:Name="autoToggleButton"  Click="AppBar_AutoButton_Click">
-        <TextBlock HorizontalAlignment="Center" Text="Auto" />
-      </ToggleButton>
-    </StackPanel>
+        <Border Grid.Row="1" Grid.Column="1" BorderThickness="5 0 0 0" BorderBrush="Black">
+            <Uc:EditorUserControl Grid.Row="1" Grid.Column="1" x:Name="UcEditor"></Uc:EditorUserControl>
+        </Border>
 
-  </Grid>
+
+
+        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8">
+            <ToggleButton Margin="2" x:Name="editToggleButton" Click="AppBar_EditButton_Click">
+                <TextBlock HorizontalAlignment="Center" Text="Pen" />
+            </ToggleButton>
+            <ToggleButton Margin="2" x:Name="touchPointerToggleButton" Click="AppBar_TouchPointerButton_Click">
+                <TextBlock HorizontalAlignment="Center" Text="Touch" />
+            </ToggleButton>
+            <ToggleButton Margin="2" x:Name="autoToggleButton"  Click="AppBar_AutoButton_Click">
+                <TextBlock HorizontalAlignment="Center" Text="Auto" />
+            </ToggleButton>
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollMode="Enabled" HorizontalScrollMode="Enabled" VerticalScrollBarVisibility="Visible"
+                      HorizontalScrollBarVisibility="Visible" Height="150" Width="750" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom"
+                      Margin="0 0 0 0">
+            <TextBlock x:Name="LogTextBlock" HorizontalAlignment="Center" Text="TextBlock" Height="auto" Width="710" Margin="20,20,20,20" TextWrapping="NoWrap"
+                   FontSize="24"/>
+        </ScrollViewer>
+
+
+    </Grid>
 </Page>
