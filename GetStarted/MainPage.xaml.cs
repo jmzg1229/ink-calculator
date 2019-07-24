@@ -78,7 +78,7 @@ namespace MyScript.IInk.GetStarted
                     var supMimeTypes = Editor.GetSupportedExportMimeTypes(rblock);
                     string mimeTypes = string.Join(", ", supMimeTypes.ToArray());
                     // For Math: LATEX, MATHML, JIIX, JPEG, PNG
-                    var result = Editor.Export_(rblock, MimeType.LATEX);
+                    var result = Editor.Export_(rblock, MimeType.MATHML);
                     LogTextBlock.Text = result.ToString();
                     
                 }
