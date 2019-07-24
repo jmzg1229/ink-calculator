@@ -37,7 +37,8 @@ def parseCMML(mmlinput):
     mmlinput= mmlinput.replace(' xmlns="', ' xmlnamespace="')
     parser = etree.XMLParser(ns_clean=True,remove_pis=True,remove_comments=True)
     tree   = etree.parse(StringIO(mmlinput), parser)
-    print(tree)
+    tree_string = etree.tostring(tree, pretty_print=True).decode("utf-8")
+    print(tree_string)
     objectify.deannotate(tree,cleanup_namespaces=True,xsi=True,xsi_nil=True)
     mmlinput=etree.tostring(tree.getroot())
     print(mmlinput)
@@ -48,16 +49,17 @@ def parseCMML(mmlinput):
     context = etree.iterparse(BytesIO(mmlinput),events=events)
     print(context)
     for action, elem in context:
-        print(action, elem.tag, elem.text)
+        print(action, elem.tag, elem.text, elem.tail, elem.getchildren())
         if level:
             continue
                 
-        if (action=='start') and (elem.tag=='apply'):
+        if (action=='start') and (elem.tag=='mo'):
             exppy+='('
             level += 1
-            opelem=elem[0]
-            if (opelem.tag=='divide'):
-                mmlaux=etree.tostring(opelem.getnext())
+            opelem=elem
+            if (opelem.text=='/'):
+                mmlaux=etree.tostring(opelem)#.decode("utf-8")
+                print(mmlaux)
                 (a,b)=parseCMML(mmlaux)
                 symvars.append(b)
                 exppy+=a
