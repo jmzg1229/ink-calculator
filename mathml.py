@@ -1,4 +1,4 @@
-@doctest_depends_on(modules=('lxml','StringIO','os',))
+#@doctest_depends_on(modules=('lxml','StringIO','os',))
 def openmath2cmml(omstring,simple=False):
     """
     Transforms a string in Openmath to Content MathML (simple or not)
@@ -7,7 +7,7 @@ def openmath2cmml(omstring,simple=False):
     
     from lxml import etree
     from lxml import objectify
-    # from io.StringIO import * # will comment out until figure out what it imports
+    #from io.StringIO import * # will comment out until figure out what it imports
     import os
     
     if simple:
@@ -25,27 +25,30 @@ def openmath2cmml(omstring,simple=False):
     return(cmmlstring)
 
 
-@doctest_depends_on(modules=('lxml','StringIO',))    
+#@doctest_depends_on(modules=('lxml','StringIO',))    
 def parseCMML(mmlinput):
     """
     This parses Content MathML into a Python expression and a set of variables which can be sympified afterwards. At the moment, only basic operators are taking into account.
     It returns the expression and the set of variables inside it
     """
     from lxml import etree
-    from StringIO import *
+    from io import StringIO, BytesIO # Will add necessary functions individually
     from lxml import objectify
     mmlinput= mmlinput.replace(' xmlns="', ' xmlnamespace="')
     parser = etree.XMLParser(ns_clean=True,remove_pis=True,remove_comments=True)
     tree   = etree.parse(StringIO(mmlinput), parser)
+    print(tree)
     objectify.deannotate(tree,cleanup_namespaces=True,xsi=True,xsi_nil=True)
     mmlinput=etree.tostring(tree.getroot())
+    print(mmlinput)
     exppy="" #this is the python expression
     symvars=[]  #these are symbolic variables which can eventually take part in the expression
     events = ("start", "end")
     level = 0
-    context = etree.iterparse(StringIO(mmlinput),events=events)
+    context = etree.iterparse(BytesIO(mmlinput),events=events)
+    print(context)
     for action, elem in context:
-        
+        print(action, elem.tag, elem.text)
         if level:
             continue
                 
@@ -118,9 +121,9 @@ def parseCMML(mmlinput):
         if (action=='end') and (elem.tag=='apply'):
             level -= 1
             
-        if action=='start' and elem.tag=='cn': #this is a number
+        if action=='start' and elem.tag=='mn': #this is a number
             exppy+=elem.text
-        if action=='start' and elem.tag=='ci': #this is a variable
+        if action=='start' and elem.tag=='mi': #this is a variable
             exppy+=elem.text
             symvars.append(elem.text) #we'll return the variable, so sympy can sympify it afterwards
         
