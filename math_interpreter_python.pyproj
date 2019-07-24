@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4bc47d44-6acd-43df-803c-45d3aff284c8}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>math_interpreter.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>CondaEnv|CondaEnv|calorcito</InterpreterId>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="math_interpreter.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Demo\Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Demo\Assets\SplashScreen.scale-200.png" />
+    <Content Include="Demo\Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Demo\Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Demo\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Demo\Assets\StoreLogo.png" />
+    <Content Include="Demo\Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Demo\obj\x64\Debug\MultipleQualifiersPerDimensionFound.txt" />
+    <Content Include="Demo\obj\x64\Debug\MyScript.InteractiveInk.Demo.Uwp-VS2017.csproj.FileListAbsolute.txt" />
+    <Content Include="Demo\obj\x64\Debug\ProjectArchitectures.txt" />
+    <Content Include="Demo\obj\x64\Debug\qualifiers.txt" />
+    <Content Include="GetStarted\Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="GetStarted\Assets\SplashScreen.scale-200.png" />
+    <Content Include="GetStarted\Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="GetStarted\Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="GetStarted\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="GetStarted\Assets\StoreLogo.png" />
+    <Content Include="GetStarted\Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="GetStarted\bin\x64\Debug\AppX\Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="GetStarted\bin\x64\Debug\AppX\Assets\SplashScreen.scale-200.png" />
+    <Content Include="GetStarted\bin\x64\Debug\AppX\Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="GetStarted\bin\x64\Debug\AppX\Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="GetStarted\bin\x64\Debug\AppX\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="GetStarted\bin\x64\Debug\AppX\Assets\StoreLogo.png" />
+    <Content Include="GetStarted\bin\x64\Debug\AppX\Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="GetStarted\obj\x64\Debug\MultipleQualifiersPerDimensionFound.txt" />
+    <Content Include="GetStarted\obj\x64\Debug\MyScript.InteractiveInk.GetStarted.Uwp-VS2017.csproj.FileListAbsolute.txt" />
+    <Content Include="GetStarted\obj\x64\Debug\ProjectArchitectures.txt" />
+    <Content Include="GetStarted\obj\x64\Debug\qualifiers.txt" />
+    <Content Include="INFO\myscript-iink-recognition-diagram.version.txt" />
+    <Content Include="INFO\myscript-iink-recognition-math.version.txt" />
+    <Content Include="INFO\myscript-iink-recognition-raw-content.version.txt" />
+    <Content Include="INFO\myscript-iink-recognition-text-en_US.version.txt" />
+    <Content Include="UIReferenceImplementation\obj\x64\Debug\MultipleQualifiersPerDimensionFound.txt" />
+    <Content Include="UIReferenceImplementation\obj\x64\Debug\MyScript.InteractiveInk.UIReferenceImplementation.Uwp-VS2017.csproj.FileListAbsolute.txt" />
+    <Content Include="UIReferenceImplementation\obj\x64\Debug\qualifiers.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Demo\" />
+    <Folder Include="Demo\Assets" />
+    <Folder Include="Demo\obj\" />
+    <Folder Include="Demo\obj\x64\" />
+    <Folder Include="Demo\obj\x64\Debug" />
+    <Folder Include="GetStarted\" />
+    <Folder Include="GetStarted\Assets" />
+    <Folder Include="GetStarted\bin\" />
+    <Folder Include="GetStarted\bin\x64\" />
+    <Folder Include="GetStarted\bin\x64\Debug\" />
+    <Folder Include="GetStarted\bin\x64\Debug\AppX\" />
+    <Folder Include="GetStarted\bin\x64\Debug\AppX\Assets" />
+    <Folder Include="GetStarted\obj\" />
+    <Folder Include="GetStarted\obj\x64\" />
+    <Folder Include="GetStarted\obj\x64\Debug" />
+    <Folder Include="INFO" />
+    <Folder Include="UIReferenceImplementation\" />
+    <Folder Include="UIReferenceImplementation\obj\" />
+    <Folder Include="UIReferenceImplementation\obj\x64\" />
+    <Folder Include="UIReferenceImplementation\obj\x64\Debug" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="CondaEnv|CondaEnv|calorcito" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>
