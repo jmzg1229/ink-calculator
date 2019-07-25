@@ -34,7 +34,8 @@ def parseCMML(mmlinput):
     from lxml import etree
     from io import StringIO, BytesIO # Will add necessary functions individually
     from lxml import objectify
-    mmlinput= mmlinput.replace(' xmlns="', ' xmlnamespace="')
+    if 'xmlns=' in mmlinput:
+        mmlinput= mmlinput.replace("xmlns=", "xmlnamespace=")
     parser = etree.XMLParser(ns_clean=True,remove_pis=True,remove_comments=True)
     tree   = etree.parse(StringIO(mmlinput), parser)
     tree_string = etree.tostring(tree, pretty_print=True).decode("utf-8")
@@ -49,6 +50,8 @@ def parseCMML(mmlinput):
     context = etree.iterparse(BytesIO(mmlinput),events=events)
     print(context)
     for action, elem in context:
+        if elem.text is not None:
+            elem.text = elem.text.strip().rstrip()
         print(action, elem.tag, elem.text, elem.tail, elem.getchildren())
         #if level:
         #    continue
@@ -120,9 +123,14 @@ def parseCMML(mmlinput):
                 #    if sib.getnext()!=None:
                 #        exppy+='*'
                 #    sib=sib.getnext()
-                exppy+='*'        
+                exppy+='*'
+            if (opelem.text=='='):
+                exppy+='='
             #exppy+=')'        
                 
+        if (elem.tag=='mrow') or (elem.tag=='mfenced'):
+            exppy+= '(' if action=='start' else ')'
+
         if (action=='end') and (elem.tag=='apply'):
             level -= 1
             

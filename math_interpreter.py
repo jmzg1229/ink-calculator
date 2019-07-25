@@ -20,8 +20,29 @@ from mathml import parseCMML
 
 # Convert MathML to sympy expression using parseCMML
 # s is raw MathML expression string
-#s = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>a</mi><mo>/</mo><mi>b</mi></math>'
-s = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mn>1</mn><mo>*</mo><mn>2</mn></math>'
+
+# 3 + 2 = 5
+# s1 = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mn> 3 </mn><mo> + </mo><mn> 2 </mn><mo> = </mo><mn> 5 </mn></math>'
+
+# 3 / 2 = 1.5
+# s2 = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mn> 3 </mn><mo> / </mo><mn> 2 </mn><mo> = </mo><mn> 1.5 </mn></math>'
+
+# (1 + 2) - 3 = 0
+s3 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mfenced>
+    <mrow>
+      <mn> 1 </mn>
+      <mo> + </mo>
+      <mn> 2 </mn>
+    </mrow>
+  </mfenced>
+  <mo> - </mo>
+  <mn> 3 </mn>
+  <mo> = </mo>
+  <mn> 0 </mn>
+</math>"""
+
+s = s3
 result = parseCMML(s)
 print(result)
 
