@@ -50,24 +50,24 @@ def parseCMML(mmlinput):
     print(context)
     for action, elem in context:
         print(action, elem.tag, elem.text, elem.tail, elem.getchildren())
-        if level:
-            continue
+        #if level:
+        #    continue
                 
         if (action=='start') and (elem.tag=='mo'):
-            exppy+='('
+            #exppy+='('
             level += 1
             opelem=elem
             if (opelem.text=='/'):
-                mmlaux=etree.tostring(opelem)#.decode("utf-8")
+                mmlaux=etree.tostring(opelem).decode("utf-8")
                 print(mmlaux)
-                (a,b)=parseCMML(mmlaux)
-                symvars.append(b)
-                exppy+=a
+                #(a,b)=parseCMML(mmlaux)
+                #symvars.append(b)
+                #exppy+=a
                 exppy+='/'
-                mmlaux=etree.tostring(opelem.getnext().getnext())
-                (a,b)=parseCMML(mmlaux)
-                symvars.append(b)
-                exppy+=a
+                #mmlaux=etree.tostring(opelem.getnext().getnext())
+                #(a,b)=parseCMML(mmlaux)
+                #symvars.append(b)
+                #exppy+=a
             if (opelem.tag=='power'):
                 mmlaux=etree.tostring(opelem.getnext())
                 (a,b)=parseCMML(mmlaux)
@@ -78,47 +78,50 @@ def parseCMML(mmlinput):
                 (a,b)=parseCMML(mmlaux)
                 symvars.append(b)
                 exppy+=a
-            if (opelem.tag=='plus'):
-                sib=opelem.getnext()
-                while sib!= None:
-                    mmlaux=etree.tostring(sib)
-                    (a,b)=parseCMML(mmlaux)
-                    symvars.append(b)
-                    exppy+=a
-                    if sib.getnext()!=None:
-                        exppy+='+'
-                    sib=sib.getnext()
-            if (opelem.tag=='minus'):
-                sib=opelem.getnext()
-                if sib.getnext()!= None:
-                    #binary operator
-                    mmlaux=etree.tostring(sib)
-                    (a,b)=parseCMML(mmlaux)
-                    symvars.append(b)
-                    exppy+=a
-                    exppy+='-'
-                    mmlaux=etree.tostring(sib.getnext())
-                    (a,b)=parseCMML(mmlaux)
-                    symvars.append(b)
-                    exppy+=a
-                else:
-                    #unary operator
-                    exppy+='-'
-                    mmlaux=etree.tostring(sib)
-                    (a,b)=parseCMML(mmlaux)
-                    symvars.append(b)
-                    exppy+=a
-            if (opelem.tag=='times'):
-                sib=opelem.getnext()
-                while sib!= None:
-                    mmlaux=etree.tostring(sib)
-                    (a,b)=parseCMML(mmlaux)
-                    symvars.append(b)
-                    exppy+=a
-                    if sib.getnext()!=None:
-                        exppy+='*'
-                    sib=sib.getnext()        
-            exppy+=')'        
+            if (opelem.text=='+'):
+                #sib=opelem.getnext()
+                #while sib!= None:
+                #    mmlaux=etree.tostring(sib)
+                #    (a,b)=parseCMML(mmlaux)
+                #    symvars.append(b)
+                #    exppy+=a
+                #    if sib.getnext()!=None:
+                #        exppy+='+'
+                #    sib=sib.getnext()
+                exppy+='+'
+            if (opelem.text=='-'):
+                #sib=opelem.getnext()
+                #if sib.getnext()!= None:
+                #    #binary operator
+                #    mmlaux=etree.tostring(sib)
+                #    (a,b)=parseCMML(mmlaux)
+                #    symvars.append(b)
+                #    exppy+=a
+                #    exppy+='-'
+                #    mmlaux=etree.tostring(sib.getnext())
+                #    (a,b)=parseCMML(mmlaux)
+                #    symvars.append(b)
+                #    exppy+=a
+                exppy+='-'
+                #else:
+                #    #unary operator
+                #    exppy+='-'
+                #    mmlaux=etree.tostring(sib)
+                #    (a,b)=parseCMML(mmlaux)
+                #    symvars.append(b)
+                #    exppy+=a
+            if (opelem.text=='*'):
+                #sib=opelem.getnext()
+                #while sib!= None:
+                #    mmlaux=etree.tostring(sib)
+                #    (a,b)=parseCMML(mmlaux)
+                #    symvars.append(b)
+                #    exppy+=a
+                #    if sib.getnext()!=None:
+                #        exppy+='*'
+                #    sib=sib.getnext()
+                exppy+='*'        
+            #exppy+=')'        
                 
         if (action=='end') and (elem.tag=='apply'):
             level -= 1

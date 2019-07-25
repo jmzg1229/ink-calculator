@@ -21,7 +21,7 @@ from mathml import parseCMML
 # Convert MathML to sympy expression using parseCMML
 # s is raw MathML expression string
 #s = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>a</mi><mo>/</mo><mi>b</mi></math>'
-s = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>p</mi><mn>02</mn></msub><mo>&#xA0;</mo><mo>=</mo><mo>&#xA0;</mo><mi>a</mi><mo>/</mo><mo>(</mo><mi>b</mi><mo>*</mo><mi>c</mi><mo>)</mo></math>'
+s = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mn>1</mn><mo>*</mo><mn>2</mn></math>'
 result = parseCMML(s)
 print(result)
 
