@@ -50,8 +50,8 @@
         <ScrollViewer VerticalScrollMode="Enabled" HorizontalScrollMode="Enabled" VerticalScrollBarVisibility="Visible"
                       HorizontalScrollBarVisibility="Visible" Height="150" Width="750" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom"
                       Margin="0 0 0 0">
-            <TextBlock x:Name="LogTextBlock" HorizontalAlignment="Center" Text="TextBlock" Height="auto" Width="710" Margin="20,20,20,20" TextWrapping="NoWrap"
-                   FontSize="24"/>
+            <TextBox x:Name="LogTextBlock" HorizontalAlignment="Center" Text="TextBlock" Height="auto" Width="710" Margin="20,20,20,20" TextWrapping="NoWrap"
+                   FontSize="24" AcceptsReturn="True"/>
         </ScrollViewer>
 
 
