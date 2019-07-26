@@ -42,7 +42,21 @@ s3 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mn> 0 </mn>
 </math>"""
 
-s = s3
+# frac(4, 2) = 2
+s4 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mfrac>
+    <mrow>
+      <mn> 4 </mn>
+    </mrow>
+    <mrow>
+      <mn> 2 </mn>
+    </mrow>
+  </mfrac>
+  <mo> = </mo>
+  <mn> 2 </mn>
+</math>"""
+
+s = s4
 result = parseCMML(s)
 print(result)
 

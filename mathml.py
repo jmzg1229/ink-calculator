@@ -39,105 +39,58 @@ def parseCMML(mmlinput):
     parser = etree.XMLParser(ns_clean=True,remove_pis=True,remove_comments=True)
     tree   = etree.parse(StringIO(mmlinput), parser)
     tree_string = etree.tostring(tree, pretty_print=True).decode("utf-8")
-    print(tree_string)
+    #print(tree)
+    print("Tree:", tree_string, sep='\n')
     objectify.deannotate(tree,cleanup_namespaces=True,xsi=True,xsi_nil=True)
+    #print([(t.tag,t.text) for t in tree.getroot()])
     mmlinput=etree.tostring(tree.getroot())
-    print(mmlinput)
+    #print(mmlinput.decode("utf-8"))
     exppy="" #this is the python expression
     symvars=[]  #these are symbolic variables which can eventually take part in the expression
-    events = ("start", "end")
-    level = 0
-    context = etree.iterparse(BytesIO(mmlinput),events=events)
-    print(context)
-    for action, elem in context:
+    #events = ("start", "end")
+    #level = 0
+    #context = etree.iterparse(BytesIO(mmlinput),events=events)
+    #print(context)
+    #print("Starting tree loop:")
+    for elem in tree.getroot():
+
+        # Clean-up input element text
         if elem.text is not None:
             elem.text = elem.text.strip().rstrip()
-        print(action, elem.tag, elem.text, elem.tail, elem.getchildren())
-        #if level:
-        #    continue
-                
-        if (action=='start') and (elem.tag=='mo'):
-            #exppy+='('
-            level += 1
-            opelem=elem
-            if (opelem.text=='/'):
-                mmlaux=etree.tostring(opelem).decode("utf-8")
-                print(mmlaux)
-                #(a,b)=parseCMML(mmlaux)
-                #symvars.append(b)
-                #exppy+=a
-                exppy+='/'
-                #mmlaux=etree.tostring(opelem.getnext().getnext())
-                #(a,b)=parseCMML(mmlaux)
-                #symvars.append(b)
-                #exppy+=a
-            if (opelem.tag=='power'):
-                mmlaux=etree.tostring(opelem.getnext())
-                (a,b)=parseCMML(mmlaux)
-                symvars.append(b)
-                exppy+=a
-                exppy+='**'
-                mmlaux=etree.tostring(opelem.getnext().getnext())
-                (a,b)=parseCMML(mmlaux)
-                symvars.append(b)
-                exppy+=a
-            if (opelem.text=='+'):
-                #sib=opelem.getnext()
-                #while sib!= None:
-                #    mmlaux=etree.tostring(sib)
-                #    (a,b)=parseCMML(mmlaux)
-                #    symvars.append(b)
-                #    exppy+=a
-                #    if sib.getnext()!=None:
-                #        exppy+='+'
-                #    sib=sib.getnext()
-                exppy+='+'
-            if (opelem.text=='-'):
-                #sib=opelem.getnext()
-                #if sib.getnext()!= None:
-                #    #binary operator
-                #    mmlaux=etree.tostring(sib)
-                #    (a,b)=parseCMML(mmlaux)
-                #    symvars.append(b)
-                #    exppy+=a
-                #    exppy+='-'
-                #    mmlaux=etree.tostring(sib.getnext())
-                #    (a,b)=parseCMML(mmlaux)
-                #    symvars.append(b)
-                #    exppy+=a
-                exppy+='-'
-                #else:
-                #    #unary operator
-                #    exppy+='-'
-                #    mmlaux=etree.tostring(sib)
-                #    (a,b)=parseCMML(mmlaux)
-                #    symvars.append(b)
-                #    exppy+=a
-            if (opelem.text=='*'):
-                #sib=opelem.getnext()
-                #while sib!= None:
-                #    mmlaux=etree.tostring(sib)
-                #    (a,b)=parseCMML(mmlaux)
-                #    symvars.append(b)
-                #    exppy+=a
-                #    if sib.getnext()!=None:
-                #        exppy+='*'
-                #    sib=sib.getnext()
-                exppy+='*'
-            if (opelem.text=='='):
-                exppy+='='
-            #exppy+=')'        
-                
-        if (elem.tag=='mrow') or (elem.tag=='mfenced'):
-            exppy+= '(' if action=='start' else ')'
+        print(elem.tag)
 
-        if (action=='end') and (elem.tag=='apply'):
-            level -= 1
-            
-        if action=='start' and elem.tag=='mn': #this is a number
-            exppy+=elem.text
-        if action=='start' and elem.tag=='mi': #this is a variable
-            exppy+=elem.text
-            symvars.append(elem.text) #we'll return the variable, so sympy can sympify it afterwards
+        # If has children, get expressions from children
+        children = elem.getchildren()
+        child_exps = []
+        for c in children:
+            cexp = parseCMML(etree.tostring(c).decode("utf-8"))
+            child_exps.append(cexp)
+        #print("Child expressions:")
+        #print(child_exps)
+
+        # Synthesize expression from this element, and
+        # Add to running expression tally
+        if elem.tag == 'mn':
+            exppy += elem.text
+        elif elem.tag == 'mfrac':
+            assert len(child_exps) == 2
+            (num, den) = child_exps
+            print("num,dem", num, den)
+            exppy += "({num})/({den})".format(num=num,den=den)
+        elif (elem.tag == 'mfenced'):
+            exppy += "(" + ''.join(child_exps) + ")"
+        elif (elem.tag == 'mrow'):
+            # Not quite being detected yet. Look at how it processes children vs root of new tree
+            exppy += "(" + ''.join(child_exps) + ")"
+        elif elem.tag == 'mo':
+            if elem.text == '=':
+                exppy += '='
+            elif elem.text == '+':
+                exppy += '+'
+            elif elem.text == '-':
+                exppy += '-'
+            elif elem.text == '*':
+                exppy += '*'
+
         
-    return (exppy, symvars)
+    return exppy
