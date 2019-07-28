@@ -24,6 +24,76 @@ def openmath2cmml(omstring,simple=False):
     cmmlstring=etree.tostring(cmmlstring_tree.getroot())
     return(cmmlstring)
 
+class ExprNotReady(Exception):
+    pass
+
+
+class MathMLInterpreter:
+    def __init__(self, Expr=None):
+        self.Expr = None
+        self.set_expr(Expr)
+        pass
+
+    def set_expr(self, Expr):
+        if Expr == None:
+            raise ValueError("Can't have NoneType as ExpressionWriter class")
+        self.Expr = Expr
+
+    def match_tag(self, elem):
+        tag_fn_map = {
+            'mn': self.mn,
+            'mi': self.mi,
+            'mo': self.mo,
+            'mrow': self.mrow,
+            'mfenced': self.mfenced,
+            'mfrac': self.mfrac
+            }
+        if elem.tag not in tag_fn_map:
+            raise ValueError("MathML tag '{}' not found in Interpreter database".format(tag))
+        fn = tag_fn_map.get(elem.tag)
+        return (elem.tag, fn)
+    
+    def get_expression(self, tree):
+        # The big one. Gets an ExpressionWriter expression
+        # from the lxml tree representation of the MathML
+        pass
+        
+    def mn(self, elem):
+        # TODO: Check with symbols such as PI
+        return self.Expr.number(elem.text)
+
+    def mi(self, elem):
+        return self.Expr.variable(elem.text)
+
+    def mrow(self, elem):
+        # Recursion required
+        return self.Expr.group()
+
+    def mfenced(self, elem):
+        # Recursion required
+        return self.Expr.parenthesis()
+        pass
+
+    def mfrac(self, elem):
+        # Recursion required
+        children = elem.getchildren()
+        assert len(children) == 2
+        pass
+
+    def mo(self, elem):
+        op_map = {
+            '=': 'equality',
+            '+': 'addition',
+            '-': 'subtraction',
+            '*': 'multiplication',
+            '/': 'division'
+        }
+        op_symbol = elem.text
+        if op_symbol not in op_map:
+            raise ValueError("Operator '{}' not found in Interpreter database.".format(op_symbol))
+        op_name = op_map.get(op_symbol)
+        return self.Expr.operator(op_name)
+
 
 #@doctest_depends_on(modules=('lxml','StringIO',))    
 def parseCMML(mmlinput):

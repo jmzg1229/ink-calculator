@@ -22,7 +22,13 @@ from mathml import parseCMML
 # s is raw MathML expression string
 
 # 3 + 2 = 5
-# s1 = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mn> 3 </mn><mo> + </mo><mn> 2 </mn><mo> = </mo><mn> 5 </mn></math>'
+s1 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mn> 3 </mn>
+  <mo> + </mo>
+  <mn> 2 </mn>
+  <mo> = </mo>
+  <mn> 5 </mn>
+</math>"""
 
 # 3 / 2 = 1.5
 # s2 = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mn> 3 </mn><mo> / </mo><mn> 2 </mn><mo> = </mo><mn> 1.5 </mn></math>'
