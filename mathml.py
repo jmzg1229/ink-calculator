@@ -27,6 +27,9 @@ def openmath2cmml(omstring,simple=False):
 class ExprNotReady(Exception):
     pass
 
+# TODO: Figure out how to communicate to ExpressionWriter what
+#       is a 'symbol', operation, and number without stepping over Sympy
+#       (specifically with the definition of a symbol)
 
 class MathMLInterpreter:
     def __init__(self, Expr=None):
@@ -53,6 +56,8 @@ class MathMLInterpreter:
         fn = tag_fn_map.get(elem.tag)
         return (elem.tag, fn)
     
+    # TODO: Add tree generation method so get_expression can be passed
+    #       only a MathML string.
     def get_expression(self, tree):
         # The big one. Gets an ExpressionWriter expression
         # from the lxml tree representation of the MathML
