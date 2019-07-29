@@ -58,9 +58,21 @@ class MathMLInterpreter:
     
     # TODO: Add tree generation method so get_expression can be passed
     #       only a MathML string.
-    def get_expression(self, tree):
+    def get_tree(self, s):
+        # Get MathML tree from string
+        from lxml import etree
+        from io import StringIO, BytesIO # Will add necessary functions individually
+        from lxml import objectify
+        if 'xmlns=' in s:
+            s = s.replace("xmlns=", "xmlnamespace=")
+        parser = etree.XMLParser(ns_clean=True,remove_pis=True,remove_comments=True)
+        tree   = etree.parse(StringIO(s), parser)
+        return tree
+        
+    def get_expression(self, s):
         # The big one. Gets an ExpressionWriter expression
-        # from the lxml tree representation of the MathML
+        # from the string representation of the MathML
+        tree = self.get_tree(s)
         pass
         
     def mn(self, elem):
