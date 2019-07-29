@@ -24,8 +24,54 @@ def openmath2cmml(omstring,simple=False):
     cmmlstring=etree.tostring(cmmlstring_tree.getroot())
     return(cmmlstring)
 
-class ExprNotReady(Exception):
-    pass
+
+class ExpressionWriter:
+    # Generates an expression. Call methods in order of operations
+    # and the expression will be generated as the calls go along.
+
+    def number(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def variable(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def equality(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def addition(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def subtraction(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def multiplication(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def division(self, *args, **kwargs):
+        raise NotImplementedError
+
+class PythonExpression(ExpressionWriter):
+    def __init__(self):
+        self.expr = ""
+
+    def number(self, *args, **kwargs):
+        num = kwargs.get('num', None)
+        if num is None:
+            raise ValueError("'num' argument not given")
+        self.expr += str(num)
+
+    def addition(self, *args, **kwargs):
+        self.expr += '+'
+
+    def subtraction(self, *args, **kwargs):
+        self.expr += '-'
+
+    def multiplication(self, *args, **kwargs):
+        self.expr += '*'
+
+    def division(self, *args, **kwargs):
+        self.expr += '/'
+
 
 # TODO: Figure out how to communicate to ExpressionWriter what
 #       is a 'symbol', operation, and number without stepping over Sympy
