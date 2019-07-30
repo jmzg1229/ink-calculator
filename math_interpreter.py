@@ -14,20 +14,18 @@
 from sympy.parsing.latex import parse_latex
 
 # mathml import
-from mathml import parseCMML
+from mathml import parseCMML, MathMLInterpreter, PythonExpression
 
 ### if name main section:
 
 # Convert MathML to sympy expression using parseCMML
 # s is raw MathML expression string
 
-# 3 + 2 = 5
+# 3 - 2
 s1 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mn> 3 </mn>
-  <mo> + </mo>
+  <mo> - </mo>
   <mn> 2 </mn>
-  <mo> = </mo>
-  <mn> 5 </mn>
 </math>"""
 
 # 3 / 2 = 1.5
@@ -62,18 +60,14 @@ s4 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mn> 2 </mn>
 </math>"""
 
-s = s4
-result = parseCMML(s)
-print(result)
 
-# Convert latex to sympy expression using parse_latex(s)
-# s is a RAW string of latex expression
-#s0 = r"\frac {1 + \sqrt {\a}} {\b}"
-#s1 = r"\frac {P_{0}} {P}"
+s = s1
 
-#s = s1
-#expr = parse_latex(s)
-#print("Latex:", s)
-#print("Sympy expression:", expr)
+### Old implementation ###
+#result = parseCMML(s)
+#print(result)
+##########################
 
-# Get variables in expression
+intp = MathMLInterpreter(Expr=PythonExpression)
+
+intp.get_expression(s)

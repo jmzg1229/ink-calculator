@@ -29,6 +29,14 @@ class ExpressionWriter:
     # Generates an expression. Call methods in order of operations
     # and the expression will be generated as the calls go along.
 
+    def run_operation(self, op_name, *args, **kwargs):
+        if op_name == 'addition':
+            self.addition(*args, **kwargs)
+        elif op_name == 'subtraction':
+            self.subtraction(*args, **kwargs)
+        else:
+            raise NotImplementedError("Operation '{}' not implemented yet in ExpressionWriter".format(op_name))
+
     def number(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -54,6 +62,8 @@ class PythonExpression(ExpressionWriter):
     def __init__(self):
         self.expr = ""
 
+
+
     def number(self, *args, **kwargs):
         num = kwargs.get('num', None)
         if num is None:
@@ -61,10 +71,20 @@ class PythonExpression(ExpressionWriter):
         self.expr += str(num)
 
     def addition(self, *args, **kwargs):
-        self.expr += '+'
+        left_value = kwargs.get('left_value', None)
+        right_value= kwargs.get('right_value', None)
+
+        if (left_value != None) and (right_value != None):
+            self.expr += str(left_value) + ' + ' + str(right_value)
+        #self.expr += '+'
 
     def subtraction(self, *args, **kwargs):
-        self.expr += '-'
+        left_value = kwargs.get('left_value', None)
+        right_value= kwargs.get('right_value', None)
+
+        if (left_value != None) and (right_value != None):
+            self.expr += str(left_value) + ' - ' + str(right_value)
+        #self.expr += '-'
 
     def multiplication(self, *args, **kwargs):
         self.expr += '*'
@@ -78,7 +98,7 @@ class PythonExpression(ExpressionWriter):
 #       (specifically with the definition of a symbol)
 
 class MathMLInterpreter:
-    def __init__(self, Expr=None):
+    def __init__(self, Expr):
         self.Expr = None
         self.set_expr(Expr)
         pass
@@ -86,13 +106,18 @@ class MathMLInterpreter:
     def set_expr(self, Expr):
         if Expr == None:
             raise ValueError("Can't have NoneType as ExpressionWriter class")
-        self.Expr = Expr
+        self.Expr = Expr()
 
     def match_tag(self, elem):
+        # Function mapping is probably defunct because we can't
+        # process whole operations on a tag-by-tag basis.
+        # Will consider removing this function soon
+        # Might need it back at some point, but will write big
+        # if statement before that happens
         tag_fn_map = {
             'mn': self.mn,
             'mi': self.mi,
-            'mo': self.mo,
+            'mo': self.get_op_name,
             'mrow': self.mrow,
             'mfenced': self.mfenced,
             'mfrac': self.mfrac
@@ -119,7 +144,71 @@ class MathMLInterpreter:
         # The big one. Gets an ExpressionWriter expression
         # from the string representation of the MathML
         tree = self.get_tree(s)
-        pass
+        tags = []
+        fns = []
+        elems = []
+        texts = []
+        for elem in tree.getroot():
+            elem.text = elem.text.strip().rstrip()
+            t,f = self.match_tag(elem)
+            tags.append(t)
+            fns.append(f)
+            elems.append(elem)
+            texts.append(elem.text)
+
+        ### Check if valid expression or just character typing
+        # Check no trailing operators
+        if (tags[0] == 'mo') or (tags[-1] == 'mo'):
+            raise NotImplementedError("Raw character writing that's an unvalid expression")
+
+        # Skip
+        ## Assuming only valid expressions below
+
+        # Index 'mo' operator tags
+        mo_idx = [i for (i,x) in enumerate(tags) if x == 'mo']
+        mo_text = [texts[i] for i in mo_idx]
+
+        # Stop if any equality operands. Not implemented yet
+        # how to process multiple expressions at once
+        num_equalities = len([i for (i,x) in enumerate(mo_text) if x == '='])
+        if num_equalities > 1:
+            raise NotImplementedError("Multiple equalities/equations in one line statement")
+        elif num_equalities == 1:
+            raise NotImplementedError("Equality and separation of expressions")
+
+        # Check if operators have operands
+        for i in mo_idx:
+            # Get operator text
+            op_elem = elems[i]
+            op_text = op_elem.text
+            op_name = self.get_op_name(op_elem)
+            print("Operation:", op_name)
+
+            # Get operand tags and texts
+            (left_tag, left_text) = (tags[i-1], elems[i-1].text)
+            (right_tag,right_text) = (tags[i+1], elems[i+1].text)
+
+            # Something other than a number as operand
+            if (left_tag != 'mn'):
+                raise NotImplementedError("Non-number as operand")
+            elif (right_tag != 'mn'):
+                raise NotImplementedError("Non-number as operand")
+
+            # Check if number is int or float
+            left_dtype = float if '.' in left_text else int
+            right_dtype = float if '.' in right_text else int
+
+            # Cast value to number
+            left_value = left_dtype(left_text)
+            right_value = right_dtype(right_text)
+            print((left_value, op_text, right_value))
+
+            # Run operation
+            op_kwargs = {'left_value': left_value, 'right_value': right_value}
+            self.Expr.run_operation(op_name, **op_kwargs)
+
+            # Print current calculated expression
+            print("Current expression:", self.Expr.expr)
         
     def mn(self, elem):
         # TODO: Check with symbols such as PI
@@ -143,7 +232,7 @@ class MathMLInterpreter:
         assert len(children) == 2
         pass
 
-    def mo(self, elem):
+    def get_op_name(self, elem):
         op_map = {
             '=': 'equality',
             '+': 'addition',
@@ -155,7 +244,7 @@ class MathMLInterpreter:
         if op_symbol not in op_map:
             raise ValueError("Operator '{}' not found in Interpreter database.".format(op_symbol))
         op_name = op_map.get(op_symbol)
-        return self.Expr.operator(op_name)
+        return op_name
 
 
 #@doctest_depends_on(modules=('lxml','StringIO',))    
