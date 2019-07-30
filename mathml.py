@@ -34,6 +34,10 @@ class ExpressionWriter:
             self.addition(*args, **kwargs)
         elif op_name == 'subtraction':
             self.subtraction(*args, **kwargs)
+        elif op_name == 'multiplication':
+            self.multiplication(*args, **kwargs)
+        elif op_name == 'division':
+            self.division(*args, **kwargs)
         else:
             raise NotImplementedError("Operation '{}' not implemented yet in ExpressionWriter".format(op_name))
 
@@ -62,7 +66,19 @@ class PythonExpression(ExpressionWriter):
     def __init__(self):
         self.expr = ""
 
+    def append_expression(self, op_symbol, *args, **kwargs):
+        left_value = kwargs.get('left_value', None)
+        right_value= kwargs.get('right_value', None)
 
+
+        if (left_value != None) and (right_value != None):
+            right_side = ' ' + op_symbol + ' ' + str(right_value)
+            # No initial expression
+            if self.expr == "":
+                self.expr += str(left_value) + right_side
+            # Yes initial expression (use only right side to avoid double-appends of operands)
+            else:
+                self.expr += right_side
 
     def number(self, *args, **kwargs):
         num = kwargs.get('num', None)
@@ -71,26 +87,20 @@ class PythonExpression(ExpressionWriter):
         self.expr += str(num)
 
     def addition(self, *args, **kwargs):
-        left_value = kwargs.get('left_value', None)
-        right_value= kwargs.get('right_value', None)
-
-        if (left_value != None) and (right_value != None):
-            self.expr += str(left_value) + ' + ' + str(right_value)
+        self.append_expression('+', *args, **kwargs)
         #self.expr += '+'
 
     def subtraction(self, *args, **kwargs):
-        left_value = kwargs.get('left_value', None)
-        right_value= kwargs.get('right_value', None)
-
-        if (left_value != None) and (right_value != None):
-            self.expr += str(left_value) + ' - ' + str(right_value)
+        self.append_expression('-', *args, **kwargs)
         #self.expr += '-'
 
     def multiplication(self, *args, **kwargs):
-        self.expr += '*'
+        self.append_expression('*', *args, **kwargs)
+        #self.expr += '*'
 
     def division(self, *args, **kwargs):
-        self.expr += '/'
+        self.append_expression('/', *args, **kwargs)
+        #self.expr += '/'
 
 
 # TODO: Figure out how to communicate to ExpressionWriter what
@@ -127,8 +137,6 @@ class MathMLInterpreter:
         fn = tag_fn_map.get(elem.tag)
         return (elem.tag, fn)
     
-    # TODO: Add tree generation method so get_expression can be passed
-    #       only a MathML string.
     def get_tree(self, s):
         # Get MathML tree from string
         from lxml import etree
@@ -176,6 +184,9 @@ class MathMLInterpreter:
         elif num_equalities == 1:
             raise NotImplementedError("Equality and separation of expressions")
 
+        # TODO: Check for overlapping operands and decide how to manage
+        # those expression mergers.
+
         # Check if operators have operands
         for i in mo_idx:
             # Get operator text
@@ -190,9 +201,9 @@ class MathMLInterpreter:
 
             # Something other than a number as operand
             if (left_tag != 'mn'):
-                raise NotImplementedError("Non-number as operand")
+                raise NotImplementedError("Non-number as left operand")
             elif (right_tag != 'mn'):
-                raise NotImplementedError("Non-number as operand")
+                raise NotImplementedError("Non-number as right operand")
 
             # Check if number is int or float
             left_dtype = float if '.' in left_text else int

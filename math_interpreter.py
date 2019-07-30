@@ -21,11 +21,13 @@ from mathml import parseCMML, MathMLInterpreter, PythonExpression
 # Convert MathML to sympy expression using parseCMML
 # s is raw MathML expression string
 
-# 3 - 2
+# 1 + 2 - 3
 s1 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
-  <mn> 3 </mn>
-  <mo> - </mo>
+  <mn> 1 </mn>
+  <mo> + </mo>
   <mn> 2 </mn>
+  <mo> - </mo>
+  <mn> 3 </mn>
 </math>"""
 
 # 3 / 2 = 1.5
