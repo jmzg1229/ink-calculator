@@ -29,6 +29,9 @@ class ExpressionWriter:
     # Generates an expression. Call methods in order of operations
     # and the expression will be generated as the calls go along.
 
+    def set_expr(self, expr, *args, **kwargs):
+        raise NotImplementedError
+
     def run_operation(self, op_name, *args, **kwargs):
         if op_name == 'addition':
             self.addition(*args, **kwargs)
@@ -63,8 +66,14 @@ class ExpressionWriter:
         raise NotImplementedError
 
 class PythonExpression(ExpressionWriter):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.expr = ""
+
+    def set_expr(self, expr, *args, **kwargs):
+        if not isinstance(expr, str):
+            raise ValueError("Python expressions must be written in strings")
+
+        self.expr = '({})'.format(expr)
 
     # TODO: Once SympyExpression begins implementation, determine what part of this method
     #       can be moved up to a general ExpressionWriter method.
@@ -123,13 +132,23 @@ class PythonExpression(ExpressionWriter):
 class MathMLInterpreter:
     def __init__(self, Expr):
         self.Expr = None
-        self.set_expr(Expr)
+        self.set_expr_class(Expr)
         pass
 
-    def set_expr(self, Expr):
+    def set_expr_class(self, Expr):
         if Expr == None:
             raise ValueError("Can't have NoneType as ExpressionWriter class")
-        self.Expr = Expr()
+        self.Expr = Expr
+        self.Expr_instance = None
+        self.reset_expr_instance()
+    
+    # TODO: Figure how to pass in arguments across functions that generate instances
+    #       Or maybe pass in an Expr class that has an overriden __init__ method with
+    #       the appropriate attributes already passed in. Yeah, that's probably better tbh.
+    def reset_expr_instance(self, *args, **kwargs):
+        if self.Expr == None:
+            raise ValueError("Haven't picked an ExpressionWriter class yet")
+        self.Expr_instance = self.Expr(*args, **kwargs)
 
     def match_tag(self, elem):
         # Function mapping is probably defunct because we can't
@@ -160,11 +179,26 @@ class MathMLInterpreter:
         parser = etree.XMLParser(ns_clean=True,remove_pis=True,remove_comments=True)
         tree   = etree.parse(StringIO(s), parser)
         return tree
+
+    def get_elem_tree_string(self, elem):
+        from lxml import etree
+        tree_string = etree.tostring(elem).decode("utf-8")
+        return tree_string
         
-    def get_expression(self, s):
+    def get_expression(self, s, Expr_instance=None):
         # The big one. Gets an ExpressionWriter expression
         # from the string representation of the MathML
+        from lxml import etree
         tree = self.get_tree(s)
+        head_tag = tree.getroot().tag
+        print("Head tag:", head_tag)
+
+        # Decide which ExpressionWriter instance to use
+        if Expr_instance == None:
+            Expr_instance = self.Expr_instance
+        elif not isinstance(Expr_instance, ExpressionWriter):
+            raise TypeError("Passed expression instance is not an 'ExpressionWriter' class")
+
         tags = []
         fns = []
         elems = []
@@ -176,6 +210,11 @@ class MathMLInterpreter:
             fns.append(f)
             elems.append(elem)
             texts.append(elem.text)
+            #print(t)
+
+        # LOOK: How to get an expression for a specific element:
+        # elem_tree_string = self.get_elem_tree_string(elem)
+        # nested_expr = self.get_expression(elem_tree_string, Expr_instance=self.Expr())
 
         ### Check if valid expression or just character typing
         # Check no trailing operators
@@ -200,6 +239,9 @@ class MathMLInterpreter:
         # TODO: Check for overlapping operands and decide how to manage
         # those expression mergers.
 
+
+
+
         # Check if operators have operands
         for midx in range(len(mo_idx)):
             # Get operator text
@@ -213,15 +255,19 @@ class MathMLInterpreter:
             (right_tag,right_text) = (tags[i+1], elems[i+1].text)
 
             # Something other than a number as operand
-            if (right_tag != 'mn'):
-                raise NotImplementedError("Non-number as right operand")
+            if (right_tag == 'mrow') or (right_tag == 'mfenced'):
+                right_tree_string = self.get_elem_tree_string(elems[i+1])
+                right_value = self.get_expression(right_tree_string, Expr_instance=self.Expr())
+                #raise NotImplementedError("Paranthesizing for right operand expression")
+            elif (right_tag != 'mn'):
+                raise NotImplementedError("Non-number ('{}' tag) as right operand".format(right_tag))
+            elif (right_tag == 'mn'):
+                # Check if number is int or float
+                right_dtype = float if '.' in right_text else int
 
-            # Check if number is int or float
-            right_dtype = float if '.' in right_text else int
-
-            # Cast value to number
-            right_value = right_dtype(right_text)
-            #print((op_text, right_value))
+                # Cast value to number
+                right_value = right_dtype(right_text)
+                #print((op_text, right_value))
 
             if midx == 0:
                 # Disable expression append
@@ -231,15 +277,19 @@ class MathMLInterpreter:
                 (left_tag, left_text) = (tags[i-1], elems[i-1].text)
 
                 # Something other than a number as operand
-                if (left_tag != 'mn'):
-                    raise NotImplementedError("Non-number as left operand")
+                if (left_tag == 'mrow') or (left_tag == 'mfenced'):
+                    left_tree_string = self.get_elem_tree_string(elems[i-1])
+                    left_value = self.get_expression(left_tree_string, Expr_instance=self.Expr())
+                    #raise NotImplementedError("Paranthesizing for left operand expression")
+                elif (left_tag != 'mn'):
+                    raise NotImplementedError("Non-number ('{}' tag) as left operand".format(left_tag))
+                elif (left_tag == 'mn'):
+                    # Check if number is int or float
+                    left_dtype = float if '.' in left_text else int
 
-                # Check if number is int or float
-                left_dtype = float if '.' in left_text else int
-
-                # Cast value to number
-                left_value = left_dtype(left_text)
-                print((left_value, op_text, right_value))
+                    # Cast value to number
+                    left_value = left_dtype(left_text)
+                    print((left_value, op_text, right_value))
 
                 # Set operation arguments
                 op_kwargs = {'append':append, 'left_value': left_value, 'right_value': right_value}
@@ -251,11 +301,16 @@ class MathMLInterpreter:
                 op_kwargs = {'append':append, 'right_value': right_value}
 
             # Run operation
-            self.Expr.run_operation(op_name, **op_kwargs)
+            Expr_instance.run_operation(op_name, **op_kwargs)
 
             # Print current calculated expression
-            print("Current expression:", self.Expr.expr)
+            print("Current expression:", Expr_instance.expr)
+
+            return Expr_instance.expr
         
+
+
+
     def mn(self, elem):
         # TODO: Check with symbols such as PI
         return self.Expr.number(elem.text)

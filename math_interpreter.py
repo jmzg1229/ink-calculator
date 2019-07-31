@@ -33,7 +33,7 @@ s1 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
 # 3 / 2 = 1.5
 # s2 = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mn> 3 </mn><mo> / </mo><mn> 2 </mn><mo> = </mo><mn> 1.5 </mn></math>'
 
-# (1 + 2) - 3 = 0
+# (1 + 2) - 3
 s3 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mfenced>
     <mrow>
@@ -44,8 +44,6 @@ s3 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
   </mfenced>
   <mo> - </mo>
   <mn> 3 </mn>
-  <mo> = </mo>
-  <mn> 0 </mn>
 </math>"""
 
 # frac(4, 2) = 2
@@ -63,7 +61,7 @@ s4 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
 </math>"""
 
 
-s = s1
+s = s3
 
 ### Old implementation ###
 #result = parseCMML(s)
