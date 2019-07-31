@@ -66,19 +66,32 @@ class PythonExpression(ExpressionWriter):
     def __init__(self):
         self.expr = ""
 
-    def append_expression(self, op_symbol, *args, **kwargs):
-        left_value = kwargs.get('left_value', None)
+    # TODO: Once SympyExpression begins implementation, determine what part of this method
+    #       can be moved up to a general ExpressionWriter method.
+    def create_expression(self, op_symbol, *args, **kwargs):
+        left_value = kwargs.get('left_value',  None)
         right_value= kwargs.get('right_value', None)
+        append =     kwargs.get('append',      True)
 
+        # Check sufficient operands are given
+        if (right_value == None):
+            raise ValueError("Right operand was not given.")
+        elif (append == False) and (left_value == None):
+            raise ValueError("Left operand not given for non-appending operation")
+        elif (append == True) and (left_value != None):
+            raise ValueError("Requested an append operation but gave a left operand anyway.")
 
-        if (left_value != None) and (right_value != None):
-            right_side = ' ' + op_symbol + ' ' + str(right_value)
-            # No initial expression
-            if self.expr == "":
-                self.expr += str(left_value) + right_side
-            # Yes initial expression (use only right side to avoid double-appends of operands)
-            else:
-                self.expr += right_side
+        # Check if either operand is an expression in of itself
+        if isinstance(left_value, PythonExpression):
+            left_value = left_value.expr
+        if isinstance(right_value, PythonExpression):
+            right_value = right_value.expr
+
+        # Overwrite expression
+        if append:
+            left_value = self.expr
+        self.expr = str(left_value) + ' {} '.format(op_symbol) + str(right_value)
+            
 
     def number(self, *args, **kwargs):
         num = kwargs.get('num', None)
@@ -87,19 +100,19 @@ class PythonExpression(ExpressionWriter):
         self.expr += str(num)
 
     def addition(self, *args, **kwargs):
-        self.append_expression('+', *args, **kwargs)
+        self.create_expression('+', *args, **kwargs)
         #self.expr += '+'
 
     def subtraction(self, *args, **kwargs):
-        self.append_expression('-', *args, **kwargs)
+        self.create_expression('-', *args, **kwargs)
         #self.expr += '-'
 
     def multiplication(self, *args, **kwargs):
-        self.append_expression('*', *args, **kwargs)
+        self.create_expression('*', *args, **kwargs)
         #self.expr += '*'
 
     def division(self, *args, **kwargs):
-        self.append_expression('/', *args, **kwargs)
+        self.create_expression('/', *args, **kwargs)
         #self.expr += '/'
 
 
@@ -188,34 +201,56 @@ class MathMLInterpreter:
         # those expression mergers.
 
         # Check if operators have operands
-        for i in mo_idx:
+        for midx in range(len(mo_idx)):
             # Get operator text
+            i = mo_idx[midx]
             op_elem = elems[i]
             op_text = op_elem.text
             op_name = self.get_op_name(op_elem)
             print("Operation:", op_name)
 
             # Get operand tags and texts
-            (left_tag, left_text) = (tags[i-1], elems[i-1].text)
             (right_tag,right_text) = (tags[i+1], elems[i+1].text)
 
             # Something other than a number as operand
-            if (left_tag != 'mn'):
-                raise NotImplementedError("Non-number as left operand")
-            elif (right_tag != 'mn'):
+            if (right_tag != 'mn'):
                 raise NotImplementedError("Non-number as right operand")
 
             # Check if number is int or float
-            left_dtype = float if '.' in left_text else int
             right_dtype = float if '.' in right_text else int
 
             # Cast value to number
-            left_value = left_dtype(left_text)
             right_value = right_dtype(right_text)
-            print((left_value, op_text, right_value))
+            #print((op_text, right_value))
+
+            if midx == 0:
+                # Disable expression append
+                append = False
+
+                # Get left operand tags and texts too
+                (left_tag, left_text) = (tags[i-1], elems[i-1].text)
+
+                # Something other than a number as operand
+                if (left_tag != 'mn'):
+                    raise NotImplementedError("Non-number as left operand")
+
+                # Check if number is int or float
+                left_dtype = float if '.' in left_text else int
+
+                # Cast value to number
+                left_value = left_dtype(left_text)
+                print((left_value, op_text, right_value))
+
+                # Set operation arguments
+                op_kwargs = {'append':append, 'left_value': left_value, 'right_value': right_value}
+            else:
+                # Enable expression append
+                append = True
+
+                # Set operation arguments
+                op_kwargs = {'append':append, 'right_value': right_value}
 
             # Run operation
-            op_kwargs = {'left_value': left_value, 'right_value': right_value}
             self.Expr.run_operation(op_name, **op_kwargs)
 
             # Print current calculated expression
