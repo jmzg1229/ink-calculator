@@ -130,25 +130,8 @@ class PythonExpression(ExpressionWriter):
 #       (specifically with the definition of a symbol)
 
 class MathMLInterpreter:
-    def __init__(self, Expr):
-        self.Expr = None
-        self.set_expr_class(Expr)
+    def __init__(self):
         pass
-
-    def set_expr_class(self, Expr):
-        if Expr == None:
-            raise ValueError("Can't have NoneType as ExpressionWriter class")
-        self.Expr = Expr
-        self.Expr_instance = None
-        self.reset_expr_instance()
-    
-    # TODO: Figure how to pass in arguments across functions that generate instances
-    #       Or maybe pass in an Expr class that has an overriden __init__ method with
-    #       the appropriate attributes already passed in. Yeah, that's probably better tbh.
-    def reset_expr_instance(self, *args, **kwargs):
-        if self.Expr == None:
-            raise ValueError("Haven't picked an ExpressionWriter class yet")
-        self.Expr_instance = self.Expr(*args, **kwargs)
 
     def match_tag(self, elem):
         # Function mapping is probably defunct because we can't
@@ -185,7 +168,7 @@ class MathMLInterpreter:
         tree_string = etree.tostring(elem).decode("utf-8")
         return tree_string
         
-    def get_expression(self, s, Expr_instance=None):
+    def get_expression(self, s, Expr):
         # The big one. Gets an ExpressionWriter expression
         # from the string representation of the MathML
         from lxml import etree
@@ -193,11 +176,10 @@ class MathMLInterpreter:
         head_tag = tree.getroot().tag
         print("Head tag:", head_tag)
 
-        # Decide which ExpressionWriter instance to use
-        if Expr_instance == None:
-            Expr_instance = self.Expr_instance
-        elif not isinstance(Expr_instance, ExpressionWriter):
+        # Check for a valid given ExpressionWriter instance
+        if not issubclass(Expr, ExpressionWriter):
             raise TypeError("Passed expression instance is not an 'ExpressionWriter' class")
+        Expr_instance = Expr()
 
         tags = []
         fns = []
@@ -257,7 +239,7 @@ class MathMLInterpreter:
             # Something other than a number as operand
             if (right_tag == 'mrow') or (right_tag == 'mfenced'):
                 right_tree_string = self.get_elem_tree_string(elems[i+1])
-                right_value = self.get_expression(right_tree_string, Expr_instance=self.Expr())
+                right_value = self.get_expression(right_tree_string, Expr=Expr)
                 #raise NotImplementedError("Paranthesizing for right operand expression")
             elif (right_tag != 'mn'):
                 raise NotImplementedError("Non-number ('{}' tag) as right operand".format(right_tag))
@@ -279,7 +261,7 @@ class MathMLInterpreter:
                 # Something other than a number as operand
                 if (left_tag == 'mrow') or (left_tag == 'mfenced'):
                     left_tree_string = self.get_elem_tree_string(elems[i-1])
-                    left_value = self.get_expression(left_tree_string, Expr_instance=self.Expr())
+                    left_value = self.get_expression(left_tree_string, Expr=Expr)
                     #raise NotImplementedError("Paranthesizing for left operand expression")
                 elif (left_tag != 'mn'):
                     raise NotImplementedError("Non-number ('{}' tag) as left operand".format(left_tag))

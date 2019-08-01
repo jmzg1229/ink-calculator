@@ -68,6 +68,6 @@ s = s3
 #print(result)
 ##########################
 
-intp = MathMLInterpreter(Expr=PythonExpression)
+intp = MathMLInterpreter()
 
-intp.get_expression(s)
+intp.get_expression(s, Expr=PythonExpression)
