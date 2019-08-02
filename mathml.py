@@ -192,16 +192,15 @@ class MathMLInterpreter:
         return tree_string
     
     def get_operand_expression(self, elem, Expr):
-        ### Get operand expression ###
+        ''' Get operand expression '''
 
         # Get operand tag and text
         (tag, text) = (elem.tag, elem.text)
 
         # Something other than a number as operand
         if (tag == 'mrow') or (tag == 'mfenced'):
-            tree_string = self.get_elem_tree_string(elem)
             logger.info("Calling tree expression recursion...")
-            operand_value = self.get_expression(tree_string, Expr=Expr)
+            operand_value = self.get_expression(elem, Expr=Expr)
             logger.info("Finished tree recursion.")
             logger.debug(print_str('operand_value:', operand_value))
         elif (tag == 'mn'):
@@ -213,10 +212,7 @@ class MathMLInterpreter:
         else:
             raise NotImplementedError("'{}' tag as operand".format(tag))
         
-
-        #logger.debug(print_str((operand_value, op_text, right_value)))
         return operand_value
-        ##############################
 
 
 
@@ -224,9 +220,19 @@ class MathMLInterpreter:
         # The big one. Gets an ExpressionWriter expression
         # from the string representation of the MathML
         from lxml import etree
-        tree = self.get_tree(s)
+
+        if type(s) == str:
+            logger.debug("Passed in a string")
+            tree = self.get_tree(s)
+        elif isinstance(s, etree._Element):
+            logger.debug("Passed in an element")
+            tree = s
+        else:
+            raise TypeError("Expected in str or etree._Element for s, but got {} instead.".format(type(s)))
+
         head_tag = tree.getroot().tag
         logger.debug(print_str("Head tag:", head_tag))
+            
 
         # Check for a valid given ExpressionWriter instance
         if not issubclass(Expr, ExpressionWriter):
@@ -273,13 +279,19 @@ class MathMLInterpreter:
 
         # Check if zero operators found (e.g. only an mrow inside an mfenced)
         if num_ops == 0:
-            if (head_tag == 'mfenced') or (head_tag == 'mrow'):
-                logger.debug("Zero ops - {} tag".format(head_tag))
+            logger.debug("Zero ops - {} tag".format(head_tag))
+            if (head_tag == 'mfenced') or (head_tag == 'mrow'):                
                 if not len(elems) == 1:
                     raise ValueError("Need only 1 element but got {} instead".format(len(elems)))
                 elem = elems[0]
                 elem_tree_string = self.get_elem_tree_string(elem)
-                return self.get_expression(elem_tree_string, Expr=Expr)                                
+                return self.get_expression(elem, Expr=Expr)          
+            elif (head_tag == 'mfrac'):
+                ### TODO: Work on fraction element
+                if not len(elems) == 2:
+                    raise ValueError("Need only 2 elements for fraction but got {}".format(len(elems)))
+                (top_elem, bot_elem) = elems
+                raise NotImplementedError("'mfrac' operator")
             else:
                 raise ValueError("No operators found inside '{}' element".format(head_tag))
 
