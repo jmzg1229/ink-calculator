@@ -65,6 +65,9 @@ class ExpressionWriter:
     def division(self, *args, **kwargs):
         raise NotImplementedError
 
+    def parenthesize(self, *args, **kwargs):
+        raise NotImplementedError
+
 class PythonExpression(ExpressionWriter):
     def __init__(self, *args, **kwargs):
         self.expr = ""
@@ -74,6 +77,7 @@ class PythonExpression(ExpressionWriter):
             raise ValueError("Python expressions must be written in strings")
 
         self.expr = '({})'.format(expr)
+        return self.expr
 
     # TODO: Once SympyExpression begins implementation, determine what part of this method
     #       can be moved up to a general ExpressionWriter method.
@@ -100,6 +104,7 @@ class PythonExpression(ExpressionWriter):
         if append:
             left_value = self.expr
         self.expr = str(left_value) + ' {} '.format(op_symbol) + str(right_value)
+        return self.expr
             
 
     def number(self, *args, **kwargs):
@@ -109,20 +114,24 @@ class PythonExpression(ExpressionWriter):
         self.expr += str(num)
 
     def addition(self, *args, **kwargs):
-        self.create_expression('+', *args, **kwargs)
+        return self.create_expression('+', *args, **kwargs)
         #self.expr += '+'
 
     def subtraction(self, *args, **kwargs):
-        self.create_expression('-', *args, **kwargs)
+        return self.create_expression('-', *args, **kwargs)
         #self.expr += '-'
 
     def multiplication(self, *args, **kwargs):
-        self.create_expression('*', *args, **kwargs)
+        return self.create_expression('*', *args, **kwargs)
         #self.expr += '*'
 
     def division(self, *args, **kwargs):
-        self.create_expression('/', *args, **kwargs)
+        return self.create_expression('/', *args, **kwargs)
         #self.expr += '/'
+
+    def parenthesize(self, *args, **kwargs):
+        self.expr = '({})'.format(self.expr)
+        return self.expr
 
 
 # TODO: Figure out how to communicate to ExpressionWriter what
@@ -193,6 +202,7 @@ class MathMLInterpreter:
             elems.append(elem)
             texts.append(elem.text)
             #print(t)
+        print(tags)
 
         # LOOK: How to get an expression for a specific element:
         # elem_tree_string = self.get_elem_tree_string(elem)
@@ -209,6 +219,7 @@ class MathMLInterpreter:
         # Index 'mo' operator tags
         mo_idx = [i for (i,x) in enumerate(tags) if x == 'mo']
         mo_text = [texts[i] for i in mo_idx]
+        num_ops = len(mo_idx)
 
         # Stop if any equality operands. Not implemented yet
         # how to process multiple expressions at once
@@ -218,12 +229,26 @@ class MathMLInterpreter:
         elif num_equalities == 1:
             raise NotImplementedError("Equality and separation of expressions")
 
+
+        # Check if zero operators found (e.g. only an mrow inside an mfenced)
+        if num_ops == 0:
+            if (head_tag == 'mfenced') or (head_tag == 'mrow'):
+                print("Zero ops - {} tag".format(head_tag))
+                if not len(elems) == 1:
+                    raise ValueError("Need only 1 element but got {} instead".format(len(elems)))
+                elem = elems[0]
+                elem_tree_string = self.get_elem_tree_string(elem)
+                nest_exp = self.get_expression(elem_tree_string, Expr=Expr)
+                nest_exp.parenthesize()
+                return nest_exp
+                #raise NotImplementedError("{} head - zero operators".format(head_tag))
+            else:
+                raise ValueError("No operators found inside '{}' element".format(head_tag))
+
+
         # TODO: Check for overlapping operands and decide how to manage
         # those expression mergers.
-
-
-
-
+        print("mo_text:", mo_text)
         # Check if operators have operands
         for midx in range(len(mo_idx)):
             # Get operator text
@@ -239,7 +264,7 @@ class MathMLInterpreter:
             # Something other than a number as operand
             if (right_tag == 'mrow') or (right_tag == 'mfenced'):
                 right_tree_string = self.get_elem_tree_string(elems[i+1])
-                right_value = self.get_expression(right_tree_string, Expr=Expr)
+                right_value = self.get_expression(right_tree_string, Expr=Expr).parenthesize()
                 #raise NotImplementedError("Paranthesizing for right operand expression")
             elif (right_tag != 'mn'):
                 raise NotImplementedError("Non-number ('{}' tag) as right operand".format(right_tag))
@@ -251,6 +276,7 @@ class MathMLInterpreter:
                 right_value = right_dtype(right_text)
                 #print((op_text, right_value))
 
+            print("midx =", midx)
             if midx == 0:
                 # Disable expression append
                 append = False
@@ -261,7 +287,10 @@ class MathMLInterpreter:
                 # Something other than a number as operand
                 if (left_tag == 'mrow') or (left_tag == 'mfenced'):
                     left_tree_string = self.get_elem_tree_string(elems[i-1])
+                    print("Calling left tree expression recursion...")
                     left_value = self.get_expression(left_tree_string, Expr=Expr)
+                    print("Finished left tree recursion.")
+                    print('left_value:', left_value)
                     #raise NotImplementedError("Paranthesizing for left operand expression")
                 elif (left_tag != 'mn'):
                     raise NotImplementedError("Non-number ('{}' tag) as left operand".format(left_tag))
@@ -283,12 +312,16 @@ class MathMLInterpreter:
                 op_kwargs = {'append':append, 'right_value': right_value}
 
             # Run operation
+            print(op_name, op_kwargs)
             Expr_instance.run_operation(op_name, **op_kwargs)
 
             # Print current calculated expression
             print("Current expression:", Expr_instance.expr)
 
-            return Expr_instance.expr
+        print("Final expression: '{}'".format(Expr_instance.expr))
+        print("Final Expr_instance:", Expr_instance)
+        print()
+        return Expr_instance
         
 
 
