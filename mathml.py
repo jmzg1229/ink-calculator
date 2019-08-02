@@ -201,6 +201,8 @@ class MathMLInterpreter:
         tree_string = etree.tostring(elem).decode("utf-8")
         return tree_string
     
+    ## TOFIX: I don't think I need this function. I think it can be implemented pretty simply
+    ##        inside get_expression to use its recursion appropriately
     def get_operand_expression(self, elem, Expr):
         """ Get operand expression """
         logger.info("Calling get_operand_expression()")
@@ -211,19 +213,24 @@ class MathMLInterpreter:
         # Something other than a number as operand
         if (tag == 'mrow') or (tag == 'mfenced'):
             logger.info("Calling tree expression recursion...")
-            operand_value = self.get_expression(elem, Expr=Expr)
+            operand_expr = self.get_expression(elem, Expr=Expr)
             logger.info("Finished tree recursion.")
-            logger.debug(print_str('operand_value:', operand_value))
+            logger.debug(print_str('operand_expr:', operand_expr))
         elif (tag == 'mn'):
+            # TOFIX: Add a robust check to see if string actually matches a number
             # Check if number is int or float
             operand_dtype = float if '.' in text else int
 
             # Cast value to number
             operand_value = operand_dtype(text)
+            operand_expr = Expr()
+
+            # Cast value to expression
+            operand_expr.number(num=operand_value)
         else:
             raise NotImplementedError("'{}' tag as operand".format(tag))
         
-        return operand_value
+        return operand_expr
 
 
 
@@ -233,6 +240,7 @@ class MathMLInterpreter:
         from lxml import etree
         logger.info("Calling get_expression()")
 
+        # Read input string or element
         if isinstance(s, etree._Element):
             logger.debug("Passed in an element")
             s = self.get_elem_tree_string(s)
@@ -241,6 +249,8 @@ class MathMLInterpreter:
         else:
             logger.debug("Passed in a string")
 
+        # TOFIX: Converting element to tree to reconvert back into elements
+        # Get lxml tree
         tree = self.get_tree(s)
         head_tag = tree.getroot().tag
 
@@ -268,6 +278,8 @@ class MathMLInterpreter:
         logger.debug(print_str("tags:", tags))
 
 
+        # No co-level tags (e.g. a singular 'mn' element)
+        ## TOFIX: Outsource 'mn' number identification into a different method
         if (len(tags) == 0):
             logger.debug("No tags co-level - {} head".format(head_tag))
             if (head_tag == 'mn'):
@@ -280,9 +292,10 @@ class MathMLInterpreter:
         # Check no trailing operators
         if (tags[0] == 'mo') or (tags[-1] == 'mo'):
             raise NotImplementedError("Raw character writing that's an unvalid expression")
-
+        ######################################################
         # Skip invalid expressions
         ## Assuming only valid expressions below
+
 
         # Index 'mo' operator tags
         mo_idx = [i for (i,x) in enumerate(tags) if x == 'mo']
@@ -301,12 +314,14 @@ class MathMLInterpreter:
         # Check if zero operators found (e.g. only an mrow inside an mfenced)
         if num_ops == 0:
             logger.debug("Zero ops - {} tag".format(head_tag))
+            # Container heads
             if (head_tag == 'mfenced') or (head_tag == 'mrow') or (head_tag == 'math'):                
                 if not len(elems) == 1:
                     raise ValueError("Need only 1 element but got {} instead".format(len(elems)))
                 elem = elems[0]
                 elem_tree_string = self.get_elem_tree_string(elem)
-                return self.get_expression(elem, Expr=Expr)          
+                return self.get_expression(elem, Expr=Expr)  
+            # Fraction head
             elif (head_tag == 'mfrac'):
                 ### TODO: Work on fraction element
                 if not len(elems) == 2:
@@ -324,11 +339,13 @@ class MathMLInterpreter:
                 Expr_instance.run_operation('division', **frac_kwargs)
                 return Expr_instance
                 raise NotImplementedError("'mfrac' operator")
+            # Any other heads
             else:
                 raise ValueError("No operators found inside '{}' element".format(head_tag))
 
         logger.debug(print_str("mo_text:", mo_text))
-        # Check if operators have operands
+
+        # Iterate through expression's operations         
         for midx in range(len(mo_idx)):
             # Get operator text
             i = mo_idx[midx]
@@ -338,18 +355,21 @@ class MathMLInterpreter:
 
             # Get right operand expression
             right_elem = elems[i+1]
-            right_value = self.get_operand_expression(right_elem, Expr)            
+            right_value = self.get_expression(right_elem, Expr)            
 
             logger.debug(print_str("midx =", midx))
+
+            # Start of expression
             if midx == 0:
                 # Disable expression append
                 append = False
 
                 # Get left operand expression
                 left_elem = elems[i-1]
-                left_value = self.get_operand_expression(left_elem, Expr)
+                left_value = self.get_expression(left_elem, Expr)
                 logger.debug(print_str('left_value:', left_value))
-                                                
+
+            # Ongoing expression                                   
             else:
                 # Enable expression append
                 append = True
@@ -363,12 +383,14 @@ class MathMLInterpreter:
             logger.debug(print_str(op_name, op_kwargs))
             Expr_instance.run_operation(op_name, **op_kwargs)
 
-            # Print current calculated expression
+            # Print/log current calculated expression
             logger.debug(print_str("Current expression:", Expr_instance.expr))
 
+        # Parenthesize expression to preserve order of operations. Done at end to prevent extra parenthesis.
         if (head_tag == 'mrow') or (head_tag == 'mfenced'):
             Expr_instance.parenthesize()
 
+        # Return expression
         logger.debug("Final expression: '{}'".format(Expr_instance.expr))
         return Expr_instance
         
