@@ -7,7 +7,7 @@ formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(name)s : %(messag
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-logger.info('\nOpening mathml.py...')
+logger.info('\n\nOpening mathml.py...')
 
 def print_str(*args, sep=' '):
     return sep.join(str(a) for a in args)
@@ -200,38 +200,6 @@ class MathMLInterpreter:
         from lxml import etree
         tree_string = etree.tostring(elem).decode("utf-8")
         return tree_string
-    
-    ## TOFIX: I don't think I need this function. I think it can be implemented pretty simply
-    ##        inside get_expression to use its recursion appropriately
-    def get_operand_expression(self, elem, Expr):
-        """ Get operand expression """
-        logger.info("Calling get_operand_expression()")
-
-        # Get operand tag and text
-        (tag, text) = (elem.tag, elem.text)
-
-        # Something other than a number as operand
-        if (tag == 'mrow') or (tag == 'mfenced'):
-            logger.info("Calling tree expression recursion...")
-            operand_expr = self.get_expression(elem, Expr=Expr)
-            logger.info("Finished tree recursion.")
-            logger.debug(print_str('operand_expr:', operand_expr))
-        elif (tag == 'mn'):
-            # TOFIX: Add a robust check to see if string actually matches a number
-            # Check if number is int or float
-            operand_dtype = float if '.' in text else int
-
-            # Cast value to number
-            operand_value = operand_dtype(text)
-            operand_expr = Expr()
-
-            # Cast value to expression
-            operand_expr.number(num=operand_value)
-        else:
-            raise NotImplementedError("'{}' tag as operand".format(tag))
-        
-        return operand_expr
-
 
 
     def get_expression(self, s, Expr):
@@ -283,7 +251,7 @@ class MathMLInterpreter:
         if (len(tags) == 0):
             logger.debug("No tags co-level - {} head".format(head_tag))
             if (head_tag == 'mn'):
-                return self.get_operand_expression(tree.getroot(), Expr=Expr)
+                return self.mn(tree.getroot(), Expr=Expr)
                 raise NotImplementedError("No co-level tags for 'mn' head")
             else:
                 raise NotImplementedError("No co-level tags for '{}' head".format(head_tag))
@@ -397,9 +365,21 @@ class MathMLInterpreter:
 
 
 
-    def mn(self, elem):
+    def mn(self, elem, Expr):
         # TODO: Check with symbols such as PI
-        return self.Expr.number(elem.text)
+        # TOFIX: Add a robust check to see if string actually matches a number
+
+        # Check if number is int or float
+        operand_dtype = float if '.' in elem.text else int
+
+        # Cast value to number
+        operand_value = operand_dtype(elem.text)
+        operand_expr = Expr()
+
+        # Cast value to expression
+        operand_expr.number(num=operand_value)
+
+        return operand_expr
 
     def mi(self, elem):
         return self.Expr.variable(elem.text)
