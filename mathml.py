@@ -43,6 +43,9 @@ class ExpressionWriter:
     # Generates an expression. Call methods in order of operations
     # and the expression will be generated as the calls go along.
 
+    def __str__(self):
+        raise NotImplementedError("String representation for placeholder ExpressionWriter template class")
+
     def set_expr(self, expr, *args, **kwargs):
         raise NotImplementedError
 
@@ -86,6 +89,9 @@ class PythonExpression(ExpressionWriter):
     def __init__(self, *args, **kwargs):
         self.expr = ""
 
+    def __str__(self):
+        return 'PythonExpression("{}")'.format(self.expr)
+
     def set_expr(self, expr, *args, **kwargs):
         if not isinstance(expr, str):
             raise ValueError("Python expressions must be written in strings")
@@ -125,7 +131,11 @@ class PythonExpression(ExpressionWriter):
         num = kwargs.get('num', None)
         if num is None:
             raise ValueError("'num' argument not given")
-        self.expr += str(num)
+        elif type(num) not in (int, float):
+            raise NotImplementedError("num of type '{}'".format(type(num)))
+        elif self.expr != '':
+            raise ValueError("Current expression not empty for inserting number")
+        self.expr = str(num)
 
     def addition(self, *args, **kwargs):
         return self.create_expression('+', *args, **kwargs)
@@ -192,7 +202,8 @@ class MathMLInterpreter:
         return tree_string
     
     def get_operand_expression(self, elem, Expr):
-        ''' Get operand expression '''
+        """ Get operand expression """
+        logger.info("Calling get_operand_expression()")
 
         # Get operand tag and text
         (tag, text) = (elem.tag, elem.text)
@@ -217,20 +228,22 @@ class MathMLInterpreter:
 
 
     def get_expression(self, s, Expr):
-        # The big one. Gets an ExpressionWriter expression
-        # from the string representation of the MathML
+        """ The big one. Gets an ExpressionWriter expression
+        # from the string representation of the MathML """
         from lxml import etree
+        logger.info("Calling get_expression()")
 
-        if type(s) == str:
-            logger.debug("Passed in a string")
-            tree = self.get_tree(s)
-        elif isinstance(s, etree._Element):
+        if isinstance(s, etree._Element):
             logger.debug("Passed in an element")
-            tree = s
-        else:
+            s = self.get_elem_tree_string(s)
+        elif type(s) != str:
             raise TypeError("Expected in str or etree._Element for s, but got {} instead.".format(type(s)))
+        else:
+            logger.debug("Passed in a string")
 
+        tree = self.get_tree(s)
         head_tag = tree.getroot().tag
+
         logger.debug(print_str("Head tag:", head_tag))
             
 
@@ -252,8 +265,16 @@ class MathMLInterpreter:
             elems.append(elem)
             texts.append(elem.text)
             #print(t)
-        logger.debug(print_str(tags))
+        logger.debug(print_str("tags:", tags))
 
+
+        if (len(tags) == 0):
+            logger.debug("No tags co-level - {} head".format(head_tag))
+            if (head_tag == 'mn'):
+                return self.get_operand_expression(tree.getroot(), Expr=Expr)
+                raise NotImplementedError("No co-level tags for 'mn' head")
+            else:
+                raise NotImplementedError("No co-level tags for '{}' head".format(head_tag))
 
         ### Check if valid expression or just character typing
         # Check no trailing operators
@@ -280,7 +301,7 @@ class MathMLInterpreter:
         # Check if zero operators found (e.g. only an mrow inside an mfenced)
         if num_ops == 0:
             logger.debug("Zero ops - {} tag".format(head_tag))
-            if (head_tag == 'mfenced') or (head_tag == 'mrow'):                
+            if (head_tag == 'mfenced') or (head_tag == 'mrow') or (head_tag == 'math'):                
                 if not len(elems) == 1:
                     raise ValueError("Need only 1 element but got {} instead".format(len(elems)))
                 elem = elems[0]
@@ -290,7 +311,18 @@ class MathMLInterpreter:
                 ### TODO: Work on fraction element
                 if not len(elems) == 2:
                     raise ValueError("Need only 2 elements for fraction but got {}".format(len(elems)))
+                
+                # Get fraction numerator and denominators
                 (top_elem, bot_elem) = elems
+                top_expr = self.get_expression(top_elem, Expr=Expr)
+                bot_expr = self.get_expression(bot_elem, Expr=Expr)
+                logger.debug(print_str("top_expr:", top_expr))
+                logger.debug(print_str("bot_expr:", bot_expr))
+
+                # Run fraction (division) operation
+                frac_kwargs = {'append': False, 'left_value': top_expr, 'right_value': bot_expr}
+                Expr_instance.run_operation('division', **frac_kwargs)
+                return Expr_instance
                 raise NotImplementedError("'mfrac' operator")
             else:
                 raise ValueError("No operators found inside '{}' element".format(head_tag))

@@ -60,8 +60,22 @@ s4 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
   </mfrac>
 </math>"""
 
+# frac(4, 2 + 3)
+s5 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mfrac>
+    <mrow>
+      <mn> 4 </mn>
+    </mrow>
+    <mrow>
+        <mn> 2 </mn>
+        <mo> + </mo>
+        <mn> 3 </mn>
+    </mrow>
+  </mfrac>
+</math>"""
 
-s = s1
+
+s = s5
 
 ### Old implementation ###
 #result = parseCMML(s)
