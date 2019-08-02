@@ -1,3 +1,17 @@
+### TODO: Look out for logger variable overriding when using logging across mutliple files/modules
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler('log_{}.txt'.format(__name__))
+formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(name)s : %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+logger.info('\nOpening mathml.py...')
+
+def print_str(*args, sep=' '):
+    return sep.join(str(a) for a in args)
+
 #@doctest_depends_on(modules=('lxml','StringIO','os',))
 def openmath2cmml(omstring,simple=False):
     """
@@ -183,7 +197,7 @@ class MathMLInterpreter:
         from lxml import etree
         tree = self.get_tree(s)
         head_tag = tree.getroot().tag
-        print("Head tag:", head_tag)
+        logger.debug(print_str("Head tag:", head_tag))
 
         # Check for a valid given ExpressionWriter instance
         if not issubclass(Expr, ExpressionWriter):
@@ -202,7 +216,7 @@ class MathMLInterpreter:
             elems.append(elem)
             texts.append(elem.text)
             #print(t)
-        print(tags)
+        logger.debug(print_str(tags))
 
 
         ### Check if valid expression or just character typing
@@ -230,22 +244,20 @@ class MathMLInterpreter:
         # Check if zero operators found (e.g. only an mrow inside an mfenced)
         if num_ops == 0:
             if (head_tag == 'mfenced') or (head_tag == 'mrow'):
-                print("Zero ops - {} tag".format(head_tag))
+                logger.debug("Zero ops - {} tag".format(head_tag))
                 if not len(elems) == 1:
                     raise ValueError("Need only 1 element but got {} instead".format(len(elems)))
                 elem = elems[0]
                 elem_tree_string = self.get_elem_tree_string(elem)
                 nest_exp = self.get_expression(elem_tree_string, Expr=Expr)
-                #nest_exp.parenthesize()
-                return nest_exp
-                #raise NotImplementedError("{} head - zero operators".format(head_tag))
+                return nest_exp                
             else:
                 raise ValueError("No operators found inside '{}' element".format(head_tag))
 
 
         # TODO: Check for overlapping operands and decide how to manage
         # those expression mergers.
-        print("mo_text:", mo_text)
+        logger.debug(print_str("mo_text:", mo_text))
         # Check if operators have operands
         for midx in range(len(mo_idx)):
             # Get operator text
@@ -253,7 +265,7 @@ class MathMLInterpreter:
             op_elem = elems[i]
             op_text = op_elem.text
             op_name = self.get_op_name(op_elem)
-            print("Operation:", op_name)
+            logger.debug(print_str("Operation:", op_name))
 
             # Get operand tags and texts
             (right_tag,right_text) = (tags[i+1], elems[i+1].text)
@@ -261,19 +273,16 @@ class MathMLInterpreter:
             # Something other than a number as operand
             if (right_tag == 'mrow') or (right_tag == 'mfenced'):
                 right_tree_string = self.get_elem_tree_string(elems[i+1])
-                right_value = self.get_expression(right_tree_string, Expr=Expr)
-                #raise NotImplementedError("Paranthesizing for right operand expression")
+                right_value = self.get_expression(right_tree_string, Expr=Expr)                
             elif (right_tag == 'mn'):
                 # Check if number is int or float
                 right_dtype = float if '.' in right_text else int
-
                 # Cast value to number
                 right_value = right_dtype(right_text)
-                #print((op_text, right_value))
             else:
                 raise NotImplementedError("'{}' tag as right operand".format(right_tag))
 
-            print("midx =", midx)
+            logger.debug(print_str("midx =", midx))
             if midx == 0:
                 # Disable expression append
                 append = False
@@ -284,10 +293,10 @@ class MathMLInterpreter:
                 # Something other than a number as operand
                 if (left_tag == 'mrow') or (left_tag == 'mfenced'):
                     left_tree_string = self.get_elem_tree_string(elems[i-1])
-                    print("Calling left tree expression recursion...")
+                    logger.info("Calling left tree expression recursion...")
                     left_value = self.get_expression(left_tree_string, Expr=Expr)
-                    print("Finished left tree recursion.")
-                    print('left_value:', left_value)
+                    logger.info("Finished left tree recursion.")
+                    logger.debug(print_str('left_value:', left_value))
                     #raise NotImplementedError("Paranthesizing for left operand expression")
                 elif (left_tag != 'mn'):
                     raise NotImplementedError("Non-number ('{}' tag) as left operand".format(left_tag))
@@ -297,7 +306,7 @@ class MathMLInterpreter:
 
                     # Cast value to number
                     left_value = left_dtype(left_text)
-                    print((left_value, op_text, right_value))
+                    logger.debug(print_str((left_value, op_text, right_value)))
 
                 # Set operation arguments
                 op_kwargs = {'append':append, 'left_value': left_value, 'right_value': right_value}
@@ -309,18 +318,17 @@ class MathMLInterpreter:
                 op_kwargs = {'append':append, 'right_value': right_value}
 
             # Run operation
-            print(op_name, op_kwargs)
+            logger.debug(print_str(op_name, op_kwargs))
             Expr_instance.run_operation(op_name, **op_kwargs)
 
             # Print current calculated expression
-            print("Current expression:", Expr_instance.expr)
+            logger.debug(print_str("Current expression:", Expr_instance.expr))
 
         if (head_tag == 'mrow') or (head_tag == 'mfenced'):
             Expr_instance.parenthesize()
 
         print("Final expression: '{}'".format(Expr_instance.expr))
-        print("Final Expr_instance:", Expr_instance)
-        print()
+        logger.debug("Final expression: '{}'".format(Expr_instance.expr))
         return Expr_instance
         
 
