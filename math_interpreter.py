@@ -48,7 +48,7 @@ s3 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
   </mfenced>
 </math>"""
 
-# frac(4, 2) = 2
+# frac(4, 2)
 s4 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mfrac>
     <mrow>
@@ -58,12 +58,10 @@ s4 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
       <mn> 2 </mn>
     </mrow>
   </mfrac>
-  <mo> = </mo>
-  <mn> 2 </mn>
 </math>"""
 
 
-s = s3
+s = s1
 
 ### Old implementation ###
 #result = parseCMML(s)
@@ -72,4 +70,5 @@ s = s3
 
 intp = MathMLInterpreter()
 
-intp.get_expression(s, Expr=PythonExpression)
+expr_inst = intp.get_expression(s, Expr=PythonExpression)
+print("Final expression: '{}'".format(expr_inst.expr))

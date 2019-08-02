@@ -190,7 +190,36 @@ class MathMLInterpreter:
         from lxml import etree
         tree_string = etree.tostring(elem).decode("utf-8")
         return tree_string
+    
+    def get_operand_expression(self, elem, Expr):
+        ### Get operand expression ###
+
+        # Get operand tag and text
+        (tag, text) = (elem.tag, elem.text)
+
+        # Something other than a number as operand
+        if (tag == 'mrow') or (tag == 'mfenced'):
+            tree_string = self.get_elem_tree_string(elem)
+            logger.info("Calling tree expression recursion...")
+            operand_value = self.get_expression(tree_string, Expr=Expr)
+            logger.info("Finished tree recursion.")
+            logger.debug(print_str('operand_value:', operand_value))
+        elif (tag == 'mn'):
+            # Check if number is int or float
+            operand_dtype = float if '.' in text else int
+
+            # Cast value to number
+            operand_value = operand_dtype(text)
+        else:
+            raise NotImplementedError("'{}' tag as operand".format(tag))
         
+
+        #logger.debug(print_str((operand_value, op_text, right_value)))
+        return operand_value
+        ##############################
+
+
+
     def get_expression(self, s, Expr):
         # The big one. Gets an ExpressionWriter expression
         # from the string representation of the MathML
@@ -204,6 +233,7 @@ class MathMLInterpreter:
             raise TypeError("Passed expression instance is not an 'ExpressionWriter' class")
         Expr_instance = Expr()
 
+        # Setup/data loop
         tags = []
         fns = []
         elems = []
@@ -249,73 +279,41 @@ class MathMLInterpreter:
                     raise ValueError("Need only 1 element but got {} instead".format(len(elems)))
                 elem = elems[0]
                 elem_tree_string = self.get_elem_tree_string(elem)
-                nest_exp = self.get_expression(elem_tree_string, Expr=Expr)
-                return nest_exp                
+                return self.get_expression(elem_tree_string, Expr=Expr)                                
             else:
                 raise ValueError("No operators found inside '{}' element".format(head_tag))
 
-
-        # TODO: Check for overlapping operands and decide how to manage
-        # those expression mergers.
         logger.debug(print_str("mo_text:", mo_text))
         # Check if operators have operands
         for midx in range(len(mo_idx)):
             # Get operator text
             i = mo_idx[midx]
             op_elem = elems[i]
-            op_text = op_elem.text
             op_name = self.get_op_name(op_elem)
             logger.debug(print_str("Operation:", op_name))
 
-            # Get operand tags and texts
-            (right_tag,right_text) = (tags[i+1], elems[i+1].text)
-
-            # Something other than a number as operand
-            if (right_tag == 'mrow') or (right_tag == 'mfenced'):
-                right_tree_string = self.get_elem_tree_string(elems[i+1])
-                right_value = self.get_expression(right_tree_string, Expr=Expr)                
-            elif (right_tag == 'mn'):
-                # Check if number is int or float
-                right_dtype = float if '.' in right_text else int
-                # Cast value to number
-                right_value = right_dtype(right_text)
-            else:
-                raise NotImplementedError("'{}' tag as right operand".format(right_tag))
+            # Get right operand expression
+            right_elem = elems[i+1]
+            right_value = self.get_operand_expression(right_elem, Expr)            
 
             logger.debug(print_str("midx =", midx))
             if midx == 0:
                 # Disable expression append
                 append = False
 
-                # Get left operand tags and texts too
-                (left_tag, left_text) = (tags[i-1], elems[i-1].text)
-
-                # Something other than a number as operand
-                if (left_tag == 'mrow') or (left_tag == 'mfenced'):
-                    left_tree_string = self.get_elem_tree_string(elems[i-1])
-                    logger.info("Calling left tree expression recursion...")
-                    left_value = self.get_expression(left_tree_string, Expr=Expr)
-                    logger.info("Finished left tree recursion.")
-                    logger.debug(print_str('left_value:', left_value))
-                    #raise NotImplementedError("Paranthesizing for left operand expression")
-                elif (left_tag != 'mn'):
-                    raise NotImplementedError("Non-number ('{}' tag) as left operand".format(left_tag))
-                elif (left_tag == 'mn'):
-                    # Check if number is int or float
-                    left_dtype = float if '.' in left_text else int
-
-                    # Cast value to number
-                    left_value = left_dtype(left_text)
-                    logger.debug(print_str((left_value, op_text, right_value)))
-
-                # Set operation arguments
-                op_kwargs = {'append':append, 'left_value': left_value, 'right_value': right_value}
+                # Get left operand expression
+                left_elem = elems[i-1]
+                left_value = self.get_operand_expression(left_elem, Expr)
+                logger.debug(print_str('left_value:', left_value))
+                                                
             else:
                 # Enable expression append
                 append = True
+                left_value = None
+                
 
-                # Set operation arguments
-                op_kwargs = {'append':append, 'right_value': right_value}
+            # Set operation arguments
+            op_kwargs = {'append':append, 'left_value': left_value, 'right_value': right_value}
 
             # Run operation
             logger.debug(print_str(op_name, op_kwargs))
@@ -327,7 +325,6 @@ class MathMLInterpreter:
         if (head_tag == 'mrow') or (head_tag == 'mfenced'):
             Expr_instance.parenthesize()
 
-        print("Final expression: '{}'".format(Expr_instance.expr))
         logger.debug("Final expression: '{}'".format(Expr_instance.expr))
         return Expr_instance
         
