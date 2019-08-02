@@ -33,17 +33,19 @@ s1 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
 # 3 / 2 = 1.5
 # s2 = r'<math xmlns="http://www.w3.org/1998/Math/MathML"><mn> 3 </mn><mo> / </mo><mn> 2 </mn><mo> = </mo><mn> 1.5 </mn></math>'
 
-# (1 + 2) - 3
+# 3 - (1 + 2)
 s3 = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
-  <mfenced>
+  <mn> 3 </mn>
+  <mo> - </mo>
+    <mfenced>
     <mrow>
+    <mfenced>
       <mn> 1 </mn>
       <mo> + </mo>
       <mn> 2 </mn>
+    </mfenced>
     </mrow>
   </mfenced>
-  <mo> - </mo>
-  <mn> 3 </mn>
 </math>"""
 
 # frac(4, 2) = 2

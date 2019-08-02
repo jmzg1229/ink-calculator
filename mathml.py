@@ -204,16 +204,13 @@ class MathMLInterpreter:
             #print(t)
         print(tags)
 
-        # LOOK: How to get an expression for a specific element:
-        # elem_tree_string = self.get_elem_tree_string(elem)
-        # nested_expr = self.get_expression(elem_tree_string, Expr_instance=self.Expr())
 
         ### Check if valid expression or just character typing
         # Check no trailing operators
         if (tags[0] == 'mo') or (tags[-1] == 'mo'):
             raise NotImplementedError("Raw character writing that's an unvalid expression")
 
-        # Skip
+        # Skip invalid expressions
         ## Assuming only valid expressions below
 
         # Index 'mo' operator tags
@@ -239,7 +236,7 @@ class MathMLInterpreter:
                 elem = elems[0]
                 elem_tree_string = self.get_elem_tree_string(elem)
                 nest_exp = self.get_expression(elem_tree_string, Expr=Expr)
-                nest_exp.parenthesize()
+                #nest_exp.parenthesize()
                 return nest_exp
                 #raise NotImplementedError("{} head - zero operators".format(head_tag))
             else:
@@ -264,10 +261,8 @@ class MathMLInterpreter:
             # Something other than a number as operand
             if (right_tag == 'mrow') or (right_tag == 'mfenced'):
                 right_tree_string = self.get_elem_tree_string(elems[i+1])
-                right_value = self.get_expression(right_tree_string, Expr=Expr).parenthesize()
+                right_value = self.get_expression(right_tree_string, Expr=Expr)
                 #raise NotImplementedError("Paranthesizing for right operand expression")
-            elif (right_tag != 'mn'):
-                raise NotImplementedError("Non-number ('{}' tag) as right operand".format(right_tag))
             elif (right_tag == 'mn'):
                 # Check if number is int or float
                 right_dtype = float if '.' in right_text else int
@@ -275,6 +270,8 @@ class MathMLInterpreter:
                 # Cast value to number
                 right_value = right_dtype(right_text)
                 #print((op_text, right_value))
+            else:
+                raise NotImplementedError("'{}' tag as right operand".format(right_tag))
 
             print("midx =", midx)
             if midx == 0:
@@ -317,6 +314,9 @@ class MathMLInterpreter:
 
             # Print current calculated expression
             print("Current expression:", Expr_instance.expr)
+
+        if (head_tag == 'mrow') or (head_tag == 'mfenced'):
+            Expr_instance.parenthesize()
 
         print("Final expression: '{}'".format(Expr_instance.expr))
         print("Final Expr_instance:", Expr_instance)
