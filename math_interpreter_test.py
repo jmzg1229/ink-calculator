@@ -103,4 +103,23 @@ def test_mathml_python_expression_04_parenthesis_fraction():
     assert py_expr == scorrect, "Parenthesis fraction expressions don't match"
 
 
+def test_mathml_python_expression_05_minimal_parenthesis():
+    scorrect = '(2 + 3)'
+    # (2 + 3) is correct, but (((2 + 3))) is MathML given
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+    <mfenced> 
+      <mfenced>
+        <mrow>
+            <mn> 2 </mn>
+            <mo> + </mo>
+            <mn> 3 </mn>
+        </mrow>
+      </mfenced>
+    </mfenced>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=PythonExpression)
+    py_expr = expr_instance.expr
+    assert py_expr == scorrect, "Parenthesis fraction expressions don't match"
+
 
