@@ -3,20 +3,16 @@
   <mn> 3 </mn>
   <mo> + </mo>
   <mn> 2 </mn>
-  <mo> = </mo>
-  <mn> 5 </mn>
 </math>
 
-# 3 / 2 = 1.5
+# 3 / 2
 <math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mn> 3 </mn>
   <mo> / </mo>
   <mn> 2 </mn>
-  <mo> = </mo>
-  <mn> 1.5 </mn>
 </math>
 
-# (1 + 2) - 3 = 0
+# (1 + 2) - 3
 <math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mfenced>
     <mrow>
@@ -27,11 +23,9 @@
   </mfenced>
   <mo> - </mo>
   <mn> 3 </mn>
-  <mo> = </mo>
-  <mn> 0 </mn>
 </math>
 
-# frac(4,2) = 2
+# frac(4,2)
 <math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mfrac>
     <mrow>
@@ -41,11 +35,9 @@
       <mn> 2 </mn>
     </mrow>
   </mfrac>
-  <mo> = </mo>
-  <mn> 2 </mn>
 </math>
 
-# (4 + 3) / 7 = 1
+# (4 + 3) / 7
 <math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mfrac>
     <mrow>
@@ -61,15 +53,66 @@
       <mn> 7 </mn>
     </mrow>
   </mfrac>
-  <mo> = </mo>
-  <mn> 1 </mn>
 </math>
+
+# 2^3 - Note: uses "msup" rather than power explicitly
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <msup>
+    <mrow>
+      <mn> 2 </mn>
+    </mrow>
+    <mrow>
+      <mn> 3 </mn>
+    </mrow>
+  </msup>
+</math>
+
+# 2^(1 + 2)
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <msup>
+    <mrow>
+      <mn> 2 </mn>
+    </mrow>
+    <mrow>
+      <mfenced>
+        <mrow>
+          <mn> 1 </mn>
+          <mo> + </mo>
+          <mn> 2 </mn>
+        </mrow>
+      </mfenced>
+    </mrow>
+  </msup>
+</math>
+
+# Special symbols
 
 # 2 x 3 = 6
 <math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mn> 2 </mn>
   <mo> &#x00D7; <!-- multiplication sign --> </mo>
   <mn> 3 </mn>
-  <mo> = </mo>
-  <mn> 6 </mn>
+</math>
+
+### Variables - work same as numbers but have 'mi' tag instead
+
+# x + y + z
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi> x </mi>
+  <mo> + </mo>
+  <mi> y </mi>
+  <mo> + </mo>
+  <mi> z </mi>
+</math>
+
+# x^2
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <msup>
+    <mrow>
+      <mi> x </mi>
+    </mrow>
+    <mrow>
+      <mn> 2 </mn>
+    </mrow>
+  </msup>
 </math>
