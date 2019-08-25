@@ -142,6 +142,9 @@ class PythonExpression(ExpressionWriter):
         return self.create_expression('/', *args, **kwargs)
         #self.expr += '/'
 
+    def power(self, *args, **kwargs):
+        return self.create_expression('**', *args, **kwargs)
+
     def parenthesize(self, *args, **kwargs):
         self.expr = '({})'.format(self.expr)
         return self.expr
@@ -225,6 +228,13 @@ class SympyExpression(ExpressionWriter):
         left_value = kwargs.get('left_value')
         right_value = kwargs.get('right_value')
         self.expr = Mul(left_value, Pow(right_value, -1))
+        return self.expr
+
+    def power(self, *args, **kwargs):
+        (args, kwargs) = self.argcheck(*args, **kwargs)
+        left_value = kwargs.get('left_value')
+        right_value = kwargs.get('right_value')
+        self.expr = Pow(left_value, right_value)
         return self.expr
 
     def equation(self, *args, **kwargs):

@@ -155,6 +155,24 @@ def test_mathml_python_expression_07_basic_equation():
     py_expr = expr_instance.expr
     assert py_expr == scorrect, "Basic operands expressions don't match"
 
+def test_mathml_python_expression_08_basic_power():
+    # 1 + 2 - 3
+    scorrect = '2**3'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <msup>
+        <mrow>
+          <mn> 2 </mn>
+        </mrow>
+        <mrow>
+          <mn> 3 </mn>
+        </mrow>
+      </msup>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=PythonExpression)
+    py_expr = expr_instance.expr
+    assert py_expr == scorrect, "Basic operands expressions don't match"
+
 
 ### SympyExpression Tests ###########
 

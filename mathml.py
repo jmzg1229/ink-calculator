@@ -34,10 +34,11 @@ class MathMLInterpreter:
             'mo': self.get_op_name,
             'mrow': self.mrow,
             'mfenced': self.mfenced,
-            'mfrac': self.mfrac
+            'mfrac': self.mfrac,
+            'msup': self.msup
             }
         if elem.tag not in tag_fn_map:
-            raise ValueError("MathML tag '{}' not found in Interpreter database".format(tag))
+            raise ValueError("MathML tag '{}' not found in Interpreter database".format(elem.tag))
         fn = tag_fn_map.get(elem.tag)
         return (elem.tag, fn)
     
@@ -183,6 +184,23 @@ class MathMLInterpreter:
                 return Expr_instance
                 raise NotImplementedError("'mfrac' operator")
             # Any other heads
+            elif (head_tag == 'msup'):
+                if not len(elems) == 2:
+                    raise ValueError("Need only 2 elements for power but got {}".format(len(elems)))
+                
+                # Get base and power (e.g. exponent)
+                (base_elem, power_elem) = elems
+                base_expr = self.get_expression(base_elem, Expr=Expr)
+                power_expr = self.get_expression(power_elem, Expr=Expr)
+                logger_mathml.debug(print_str("base_expr:", base_expr))
+                logger_mathml.debug(print_str("power_expr:", power_expr))
+
+                # Run power operation
+                frac_kwargs = {'append': False, 'left_value': top_expr, 'right_value': bot_expr}
+                Expr_instance.run_operation('division', **frac_kwargs)
+
+
+                raise NotImplementedError("'msup' operator")
             else:
                 raise ValueError("No operators found inside '{}' element".format(head_tag))
 
@@ -275,6 +293,10 @@ class MathMLInterpreter:
         children = elem.getchildren()
         assert len(children) == 2
         pass
+
+
+    def msup(self, elem):
+        raise NotImplementedError
 
     def get_op_name(self, elem):
         op_map = {
