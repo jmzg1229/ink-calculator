@@ -11,7 +11,8 @@
 import pytest
 
 # mathml import
-from mathml import MathMLInterpreter, PythonExpression
+from mathml import MathMLInterpreter
+from expression_classes import PythonExpression, SympyExpression
 
 ### if name main section:
 
@@ -122,4 +123,83 @@ def test_mathml_python_expression_05_minimal_parenthesis():
     py_expr = expr_instance.expr
     assert py_expr == scorrect, "Parenthesis fraction expressions don't match"
 
+def test_mathml_python_expression_06_basic_symbols():
+    # 1 + 2 - 3
+    scorrect = 'x + y - z'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mi> x </mi>
+      <mo> + </mo>
+      <mi> y </mi>
+      <mo> - </mo>
+      <mi> z </mi>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=PythonExpression)
+    py_expr = expr_instance.expr
+    assert py_expr == scorrect, "Basic symbols expressions don't match"
 
+def test_mathml_python_expression_07_basic_equation():
+    # 1 + 2 - 3
+    scorrect = '1 + 2 - 3 = 0'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mn> 1 </mn>
+      <mo> + </mo>
+      <mn> 2 </mn>
+      <mo> - </mo>
+      <mn> 3 </mn>
+      <mo> = </mo>
+      <mn> 0 </mn>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=PythonExpression)
+    py_expr = expr_instance.expr
+    assert py_expr == scorrect, "Basic operands expressions don't match"
+
+
+### SympyExpression Tests ###########
+
+def test_mathml_sympy_expression_01_basic_operands():
+    # 1 + 2 - 3 -> 0
+    scorrect = '0'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mn> 1 </mn>
+      <mo> + </mo>
+      <mn> 2 </mn>
+      <mo> - </mo>
+      <mn> 3 </mn>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=SympyExpression)
+    sympy_expr = expr_instance.expr
+    assert str(sympy_expr) == scorrect, "Basic SymPy operands expressions don't match"
+
+
+def test_mathml_sympy_expression_02_basic_symbols():
+    # 1 + 2 - 3
+    scorrect = 'x + y - z'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mi> x </mi>
+      <mo> + </mo>
+      <mi> y </mi>
+      <mo> - </mo>
+      <mi> z </mi>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=SympyExpression)
+    sympy_expr = expr_instance.expr
+    assert str(sympy_expr) == scorrect, "Basic SymPy operands expressions don't match"
+
+def test_mathml_sympy_expression_03_basic_equation():
+    # 1 + 2 - 3
+    scorrect = 'Eq(x + y, 3)'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mi> x </mi>
+      <mo> + </mo>
+      <mi> y </mi>
+      <mo> = </mo>
+      <mn> 3 </mn>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=SympyExpression)
+    sympy_expr = expr_instance.expr
+    assert str(sympy_expr) == scorrect, "Basic equations expressions don't match"

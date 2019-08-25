@@ -1,162 +1,18 @@
-### TODO: Look out for logger variable overriding when using logging across mutliple files/modules
+### TODO: Look out for logger_mathml variable overriding when using logging across mutliple files/modules
 import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger_mathml = logging.getLogger(__name__)
+logger_mathml.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler('log_{}.txt'.format(__name__))
 formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(name)s : %(message)s')
 file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+logger_mathml.addHandler(file_handler)
 
-logger.info('\n\nOpening mathml.py...')
+logger_mathml.info('\n\nOpening mathml.py...')
 
-def print_str(*args, sep=' '):
-    return sep.join(str(a) for a in args)
+import copy
 
-#@doctest_depends_on(modules=('lxml','StringIO','os',))
-def openmath2cmml(omstring,simple=False):
-    """
-    Transforms a string in Openmath to Content MathML (simple or not)
-    XSL Templates from https://svn.omdoc.org/repos/omdoc/projects/emacsmode/nomdoc-mode/xsl/ although they are
-    """
-    
-    from lxml import etree
-    from lxml import objectify
-    #from io.StringIO import * # will comment out until figure out what it imports
-    import os
-    
-    if simple:
-        xslt_tree = etree.XML(open(os.path.join(request.folder,'mathml/data/omtosimcmml.xsl')).read())
-    else:
-        xslt_tree = etree.XML(open(os.path.join(request.folder,'mathml/data/omtocmml.xsl')).read())
-    
-    transform = etree.XSLT(xslt_tree)
-    omstring= omstring.replace(' xmlns="', ' xmlnamespace="')
-    parser = etree.XMLParser(ns_clean=True,remove_pis=True,remove_comments=True)
-    tree   = etree.parse(StringIO(omstring), parser)
-    objectify.deannotate(tree,cleanup_namespaces=True,xsi=True,xsi_nil=True)
-    cmmlstring_tree=transform(tree)
-    cmmlstring=etree.tostring(cmmlstring_tree.getroot())
-    return(cmmlstring)
-
-
-class ExpressionWriter:
-    # Generates an expression. Call methods in order of operations
-    # and the expression will be generated as the calls go along.
-
-    def __str__(self):
-        raise NotImplementedError("String representation for placeholder ExpressionWriter template class")
-
-    def set_expr(self, expr, *args, **kwargs):
-        raise NotImplementedError
-
-    def run_operation(self, op_name, *args, **kwargs):
-        if op_name == 'addition':
-            self.addition(*args, **kwargs)
-        elif op_name == 'subtraction':
-            self.subtraction(*args, **kwargs)
-        elif op_name == 'multiplication':
-            self.multiplication(*args, **kwargs)
-        elif op_name == 'division':
-            self.division(*args, **kwargs)
-        else:
-            raise NotImplementedError("Operation '{}' not implemented yet in ExpressionWriter".format(op_name))
-
-    def number(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def variable(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def equality(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def addition(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def subtraction(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def multiplication(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def division(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def parenthesize(self, *args, **kwargs):
-        raise NotImplementedError
-
-class PythonExpression(ExpressionWriter):
-    def __init__(self, *args, **kwargs):
-        self.expr = ""
-
-    def __str__(self):
-        return 'PythonExpression("{}")'.format(self.expr)
-
-    def set_expr(self, expr, *args, **kwargs):
-        if not isinstance(expr, str):
-            raise ValueError("Python expressions must be written in strings")
-
-        self.expr = '({})'.format(expr)
-        return self.expr
-
-    # TODO: Once SympyExpression begins implementation, determine what part of this method
-    #       can be moved up to a general ExpressionWriter method.
-    def create_expression(self, op_symbol, *args, **kwargs):
-        left_value = kwargs.get('left_value',  None)
-        right_value= kwargs.get('right_value', None)
-        append =     kwargs.get('append',      True)
-
-        # Check sufficient operands are given
-        if (right_value == None):
-            raise ValueError("Right operand was not given.")
-        elif (append == False) and (left_value == None):
-            raise ValueError("Left operand not given for non-appending operation")
-        elif (append == True) and (left_value != None):
-            raise ValueError("Requested an append operation but gave a left operand anyway.")
-
-        # Check if either operand is an expression in of itself
-        if isinstance(left_value, PythonExpression):
-            left_value = left_value.expr
-        if isinstance(right_value, PythonExpression):
-            right_value = right_value.expr
-
-        # Overwrite expression
-        if append:
-            left_value = self.expr
-        self.expr = str(left_value) + ' {} '.format(op_symbol) + str(right_value)
-        return self.expr
-            
-
-    def number(self, *args, **kwargs):
-        num = kwargs.get('num', None)
-        if num is None:
-            raise ValueError("'num' argument not given")
-        elif type(num) not in (int, float):
-            raise NotImplementedError("num of type '{}'".format(type(num)))
-        elif self.expr != '':
-            raise ValueError("Current expression not empty for inserting number")
-        self.expr = str(num)
-
-    def addition(self, *args, **kwargs):
-        return self.create_expression('+', *args, **kwargs)
-        #self.expr += '+'
-
-    def subtraction(self, *args, **kwargs):
-        return self.create_expression('-', *args, **kwargs)
-        #self.expr += '-'
-
-    def multiplication(self, *args, **kwargs):
-        return self.create_expression('*', *args, **kwargs)
-        #self.expr += '*'
-
-    def division(self, *args, **kwargs):
-        return self.create_expression('/', *args, **kwargs)
-        #self.expr += '/'
-
-    def parenthesize(self, *args, **kwargs):
-        self.expr = '({})'.format(self.expr)
-        return self.expr
-
+from utils import print_str
+from expression_classes import ExpressionWriter
 
 # TODO: Figure out how to communicate to ExpressionWriter what
 #       is a 'symbol', operation, and number without stepping over Sympy
@@ -206,23 +62,24 @@ class MathMLInterpreter:
         """ The big one. Gets an ExpressionWriter expression
         # from the string representation of the MathML """
         from lxml import etree
-        logger.info("Calling get_expression()")
+        logger_mathml.info("Calling get_expression()")
 
         # Read input string or element
         if isinstance(s, etree._Element):
-            logger.debug("Passed in an element")
+            logger_mathml.debug("Passed in an element")
             s = self.get_elem_tree_string(s)
         elif type(s) != str:
             raise TypeError("Expected in str or etree._Element for s, but got {} instead.".format(type(s)))
         else:
-            logger.debug("Passed in a string")
+            logger_mathml.debug("Passed in a string")
 
         # TOFIX: Converting element to tree to reconvert back into elements
         # Get lxml tree
         tree = self.get_tree(s)
-        head_tag = tree.getroot().tag
+        root_elem = tree.getroot()
+        head_tag = root_elem.tag
 
-        logger.debug(print_str("Head tag:", head_tag))
+        logger_mathml.debug(print_str("Head tag:", head_tag))
             
 
         # Check for a valid given ExpressionWriter instance
@@ -243,16 +100,18 @@ class MathMLInterpreter:
             elems.append(elem)
             texts.append(elem.text)
             #print(t)
-        logger.debug(print_str("tags:", tags))
+        logger_mathml.debug(print_str("tags:", tags))
 
 
         # No co-level tags (e.g. a singular 'mn' element)
         ## TOFIX: Outsource 'mn' number identification into a different method
         if (len(tags) == 0):
-            logger.debug("No tags co-level - {} head".format(head_tag))
+            logger_mathml.debug("No tags co-level - {} head".format(head_tag))
             if (head_tag == 'mn'):
                 return self.mn(tree.getroot(), Expr=Expr)
                 raise NotImplementedError("No co-level tags for 'mn' head")
+            elif (head_tag == 'mi'):
+                return self.mi(tree.getroot(), Expr=Expr)
             else:
                 raise NotImplementedError("No co-level tags for '{}' head".format(head_tag))
 
@@ -276,12 +135,28 @@ class MathMLInterpreter:
         if num_equalities > 1:
             raise NotImplementedError("Multiple equalities/equations in one line statement")
         elif num_equalities == 1:
+            left_tree = copy.deepcopy(root_elem)
+            right_tree= copy.deepcopy(root_elem)
+            before_equal = True
+            for (cl,cr) in zip(left_tree,right_tree):
+                if cl.text == '=':
+                    before_equal = False
+                    left_tree.remove(cl)
+                    right_tree.remove(cr)
+                elif before_equal:
+                    right_tree.remove(cr)
+                elif not before_equal:
+                    left_tree.remove(cl)
+            left_expr = self.get_expression(left_tree, Expr)
+            right_expr= self.get_expression(right_tree,Expr)
+            Expr_instance.equation(append=False, left_value=left_expr, right_value=right_expr)
+            return Expr_instance
             raise NotImplementedError("Equality and separation of expressions")
 
 
         # Check if zero operators found (e.g. only an mrow inside an mfenced)
         if num_ops == 0:
-            logger.debug("Zero ops - {} tag".format(head_tag))
+            logger_mathml.debug("Zero ops - {} tag".format(head_tag))
             # Container heads
             if (head_tag == 'mfenced') or (head_tag == 'mrow') or (head_tag == 'math'):                
                 if not len(elems) == 1:
@@ -299,8 +174,8 @@ class MathMLInterpreter:
                 (top_elem, bot_elem) = elems
                 top_expr = self.get_expression(top_elem, Expr=Expr)
                 bot_expr = self.get_expression(bot_elem, Expr=Expr)
-                logger.debug(print_str("top_expr:", top_expr))
-                logger.debug(print_str("bot_expr:", bot_expr))
+                logger_mathml.debug(print_str("top_expr:", top_expr))
+                logger_mathml.debug(print_str("bot_expr:", bot_expr))
 
                 # Run fraction (division) operation
                 frac_kwargs = {'append': False, 'left_value': top_expr, 'right_value': bot_expr}
@@ -311,7 +186,7 @@ class MathMLInterpreter:
             else:
                 raise ValueError("No operators found inside '{}' element".format(head_tag))
 
-        logger.debug(print_str("mo_text:", mo_text))
+        logger_mathml.debug(print_str("mo_text:", mo_text))
 
         # Iterate through expression's operations         
         for midx in range(len(mo_idx)):
@@ -319,13 +194,13 @@ class MathMLInterpreter:
             i = mo_idx[midx]
             op_elem = elems[i]
             op_name = self.get_op_name(op_elem)
-            logger.debug(print_str("Operation:", op_name))
+            logger_mathml.debug(print_str("Operation:", op_name))
 
             # Get right operand expression
             right_elem = elems[i+1]
             right_value = self.get_expression(right_elem, Expr)            
 
-            logger.debug(print_str("midx =", midx))
+            logger_mathml.debug(print_str("midx =", midx))
 
             # Start of expression
             if midx == 0:
@@ -335,7 +210,7 @@ class MathMLInterpreter:
                 # Get left operand expression
                 left_elem = elems[i-1]
                 left_value = self.get_expression(left_elem, Expr)
-                logger.debug(print_str('left_value:', left_value))
+                logger_mathml.debug(print_str('left_value:', left_value))
 
             # Ongoing expression                                   
             else:
@@ -348,18 +223,18 @@ class MathMLInterpreter:
             op_kwargs = {'append':append, 'left_value': left_value, 'right_value': right_value}
 
             # Run operation
-            logger.debug(print_str(op_name, op_kwargs))
+            logger_mathml.debug(print_str(op_name, op_kwargs))
             Expr_instance.run_operation(op_name, **op_kwargs)
 
             # Print/log current calculated expression
-            logger.debug(print_str("Current expression:", Expr_instance.expr))
+            logger_mathml.debug(print_str("Current expression:", Expr_instance.expr))
 
         # Parenthesize expression to preserve order of operations. Done at end to prevent extra parenthesis.
         if (head_tag == 'mrow') or (head_tag == 'mfenced'):
             Expr_instance.parenthesize()
 
         # Return expression
-        logger.debug("Final expression: '{}'".format(Expr_instance.expr))
+        logger_mathml.debug("Final expression: '{}'".format(Expr_instance.expr))
         return Expr_instance
         
 
@@ -381,8 +256,10 @@ class MathMLInterpreter:
 
         return operand_expr
 
-    def mi(self, elem):
-        return self.Expr.variable(elem.text)
+    def mi(self, elem, Expr):
+        symbol_expr = Expr()
+        symbol_expr.symbol(sym=elem.text)
+        return symbol_expr
 
     def mrow(self, elem):
         # Recursion required
