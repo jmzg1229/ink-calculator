@@ -35,7 +35,8 @@ class MathMLInterpreter:
             'mrow': self.mrow,
             'mfenced': self.mfenced,
             'mfrac': self.mfrac,
-            'msup': self.msup
+            'msup': self.msup,
+            'msub': self.msub
             }
         if elem.tag not in tag_fn_map:
             raise ValueError("MathML tag '{}' not found in Interpreter database".format(elem.tag))
@@ -204,6 +205,25 @@ class MathMLInterpreter:
 
             # Subscript head
             elif (head_tag == 'msub'):
+                if not len(elems) == 2:
+                    raise ValueError("Need only 2 elements for subscript but got {}".format(len(elems)))
+
+                # Get base and subscript expressions
+                (base_elem, sub_elem) = elems
+                base_expr = self.get_expression(base_elem, Expr=Expr)
+                sub_expr = self.get_expression(sub_elem, Expr=Expr)
+                logger_mathml.debug(print_str("base_expr:", base_expr))
+                logger_mathml.debug(print_str("sub_expr:", sub_expr))
+
+                base_text = str(base_expr.expr)
+                sub_text  = str(sub_expr.expr)
+
+                sym_name = '{0}_{{{1}}}'.format(base_text, sub_text)
+
+                # Run symbol creation
+                Expr_instance.symbol(sym=sym_name)
+                return Expr_instance
+
                 raise NotImplementedError("'msub' operator")
             
             # Any other heads
@@ -305,6 +325,9 @@ class MathMLInterpreter:
 
 
     def msup(self, elem):
+        raise NotImplementedError
+
+    def msub(self, elem):
         raise NotImplementedError
 
     def get_op_name(self, elem):

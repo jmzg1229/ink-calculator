@@ -239,3 +239,47 @@ def test_mathml_sympy_expression_04_basic_power():
     expr_instance = intp.get_expression(s, Expr=SympyExpression)
     sympy_expr = expr_instance.expr
     assert str(sympy_expr) == scorrect, "Basic power expressions don't match"
+
+def test_mathml_sympy_expression_05_basic_subscript():
+    # 2 ** 3 -> 8
+    scorrect = 'P_{0}'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <msub>
+        <mrow>
+          <mi> P </mi>
+        </mrow>
+        <mrow>
+          <mn> 0 </mn>
+        </mrow>
+      </msub>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=SympyExpression)
+    sympy_expr = expr_instance.expr
+    assert str(sympy_expr) == scorrect, "Basic power expressions don't match"
+
+def test_mathml_sympy_expression_06_division_subscript():
+    # 2 ** 3 -> 8
+    scorrect = 'P/P_{0}'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mfrac>
+        <mrow>
+          <mi> P </mi>
+        </mrow>
+        <mrow>
+          <msub>
+            <mrow>
+              <mi> P </mi>
+            </mrow>
+            <mrow>
+              <mn> 0 </mn>
+            </mrow>
+          </msub>
+        </mrow>
+      </mfrac>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=SympyExpression)
+    sympy_expr = expr_instance.expr
+    assert str(sympy_expr) == scorrect, "Basic power expressions don't match"
+

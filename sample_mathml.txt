@@ -116,3 +116,34 @@
     </mrow>
   </msup>
 </math>
+
+# P_{0} (subscript)
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <msub>
+    <mrow>
+      <mi> P </mi>
+    </mrow>
+    <mrow>
+      <mn> 0 </mn>
+    </mrow>
+  </msub>
+</math>
+
+# P / P_{0}
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mfrac>
+    <mrow>
+      <mi> P </mi>
+    </mrow>
+    <mrow>
+      <msub>
+        <mrow>
+          <mi> P </mi>
+        </mrow>
+        <mrow>
+          <mn> 0 </mn>
+        </mrow>
+      </msub>
+    </mrow>
+  </mfrac>
+</math>
