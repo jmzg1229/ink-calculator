@@ -32,6 +32,8 @@ class ExpressionWriter:
             self.multiplication(*args, **kwargs)
         elif op_name == 'division':
             self.division(*args, **kwargs)
+        elif op_name == 'power':
+        	self.power(*args, **kwargs)
         else:
             raise NotImplementedError("Operation '{}' not implemented yet in ExpressionWriter".format(op_name))
 
@@ -156,6 +158,7 @@ class PythonExpression(ExpressionWriter):
 class SympyExpression(ExpressionWriter):
     def __init__(self, *args, **kwargs):
         self.expr = None
+        self.evaluate = kwargs.get('evaluate', False)
 
     def __str__(self):
         return 'SympyExpression("{}")'.format(self.expr)
@@ -206,35 +209,35 @@ class SympyExpression(ExpressionWriter):
         (args, kwargs) = self.argcheck(*args, **kwargs)
         left_value = kwargs.get('left_value')
         right_value = kwargs.get('right_value')
-        self.expr = Add(left_value, right_value)
+        self.expr = Add(left_value, right_value, evaluate=self.evaluate)
         return self.expr
 
     def subtraction(self, *args, **kwargs):
         (args, kwargs) = self.argcheck(*args, **kwargs)
         left_value = kwargs.get('left_value')
         right_value = kwargs.get('right_value')
-        self.expr = Add(left_value, Mul(-1, right_value))
+        self.expr = Add(left_value, Mul(-1, right_value), evaluate=self.evaluate)
         return self.expr
 
     def multiplication(self, *args, **kwargs):
         (args, kwargs) = self.argcheck(*args, **kwargs)
         left_value = kwargs.get('left_value')
         right_value = kwargs.get('right_value')
-        self.expr = Mul(left_value, right_value)
+        self.expr = Mul(left_value, right_value, evaluate=self.evaluate)
         return self.expr
 
     def division(self, *args, **kwargs):
         (args, kwargs) = self.argcheck(*args, **kwargs)
         left_value = kwargs.get('left_value')
         right_value = kwargs.get('right_value')
-        self.expr = Mul(left_value, Pow(right_value, -1))
+        self.expr = Mul(left_value, Pow(right_value, -1), evaluate=self.evaluate)
         return self.expr
 
     def power(self, *args, **kwargs):
         (args, kwargs) = self.argcheck(*args, **kwargs)
         left_value = kwargs.get('left_value')
         right_value = kwargs.get('right_value')
-        self.expr = Pow(left_value, right_value)
+        self.expr = Pow(left_value, right_value, evaluate=self.evaluate)
         return self.expr
 
     def equation(self, *args, **kwargs):

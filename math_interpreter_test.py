@@ -157,7 +157,7 @@ def test_mathml_python_expression_07_basic_equation():
 
 def test_mathml_python_expression_08_basic_power():
     # 1 + 2 - 3
-    scorrect = '2**3'
+    scorrect = '2 ** 3'
     s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
       <msup>
         <mrow>
@@ -178,7 +178,7 @@ def test_mathml_python_expression_08_basic_power():
 
 def test_mathml_sympy_expression_01_basic_operands():
     # 1 + 2 - 3 -> 0
-    scorrect = '0'
+    scorrect = '-3 + 1 + 2'
     s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
       <mn> 1 </mn>
       <mo> + </mo>
@@ -194,7 +194,7 @@ def test_mathml_sympy_expression_01_basic_operands():
 
 def test_mathml_sympy_expression_02_basic_symbols():
     # 1 + 2 - 3
-    scorrect = 'x + y - z'
+    scorrect = '-z + x + y'
     s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
       <mi> x </mi>
       <mo> + </mo>
@@ -221,3 +221,21 @@ def test_mathml_sympy_expression_03_basic_equation():
     expr_instance = intp.get_expression(s, Expr=SympyExpression)
     sympy_expr = expr_instance.expr
     assert str(sympy_expr) == scorrect, "Basic equations expressions don't match"
+
+def test_mathml_sympy_expression_04_basic_power():
+    # 2 ** 3 -> 8
+    scorrect = '2**3'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <msup>
+        <mrow>
+          <mn> 2 </mn>
+        </mrow>
+        <mrow>
+          <mn> 3 </mn>
+        </mrow>
+      </msup>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=SympyExpression)
+    sympy_expr = expr_instance.expr
+    assert str(sympy_expr) == scorrect, "Basic power expressions don't match"

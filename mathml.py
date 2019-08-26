@@ -158,6 +158,7 @@ class MathMLInterpreter:
         # Check if zero operators found (e.g. only an mrow inside an mfenced)
         if num_ops == 0:
             logger_mathml.debug("Zero ops - {} tag".format(head_tag))
+            
             # Container heads
             if (head_tag == 'mfenced') or (head_tag == 'mrow') or (head_tag == 'math'):                
                 if not len(elems) == 1:
@@ -165,6 +166,7 @@ class MathMLInterpreter:
                 elem = elems[0]
                 elem_tree_string = self.get_elem_tree_string(elem)
                 return self.get_expression(elem, Expr=Expr)  
+            
             # Fraction head
             elif (head_tag == 'mfrac'):
                 ### TODO: Work on fraction element
@@ -183,7 +185,8 @@ class MathMLInterpreter:
                 Expr_instance.run_operation('division', **frac_kwargs)
                 return Expr_instance
                 raise NotImplementedError("'mfrac' operator")
-            # Any other heads
+            
+            # Power/Exponent head
             elif (head_tag == 'msup'):
                 if not len(elems) == 2:
                     raise ValueError("Need only 2 elements for power but got {}".format(len(elems)))
@@ -196,11 +199,14 @@ class MathMLInterpreter:
                 logger_mathml.debug(print_str("power_expr:", power_expr))
 
                 # Run power operation
-                frac_kwargs = {'append': False, 'left_value': top_expr, 'right_value': bot_expr}
-                Expr_instance.run_operation('division', **frac_kwargs)
+                power_kwargs = {'append': False, 'left_value': base_expr, 'right_value': power_expr}
+                Expr_instance.run_operation('power', **power_kwargs)
 
-
-                raise NotImplementedError("'msup' operator")
+            # Subscript head
+            elif (head_tag == 'msub'):
+                raise NotImplementedError("'msub' operator")
+            
+            # Any other heads
             else:
                 raise ValueError("No operators found inside '{}' element".format(head_tag))
 
@@ -241,7 +247,10 @@ class MathMLInterpreter:
             op_kwargs = {'append':append, 'left_value': left_value, 'right_value': right_value}
 
             # Run operation
+            logger_mathml.debug(print_str("Pre-op expression:", Expr_instance.expr))
             logger_mathml.debug(print_str(op_name, op_kwargs))
+            logger_mathml.debug(print_str('left_value:', left_value))
+            logger_mathml.debug(print_str('right_value:', right_value))
             Expr_instance.run_operation(op_name, **op_kwargs)
 
             # Print/log current calculated expression
