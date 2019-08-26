@@ -8,6 +8,7 @@ logger_exprclasses.addHandler(file_handler)
 
 logger_exprclasses.info('\n\nOpening expression_classes.py...')
 
+from utils import print_str
 from sympy import Number, Symbol, Add, Mul, Pow, Eq
 
 class ExpressionWriter:
@@ -22,6 +23,11 @@ class ExpressionWriter:
 
     def argcheck(self, *args, **kwargs):
         raise NotImplementedError
+
+    def register_symbol(self, sym_name, sym_expr, *args, **kwargs):
+    	logger_exprclasses.debug(print_str('Registered symbol:', sym_name, sym_expr))
+    	self.symbol_library.update({sym_name: sym_expr})
+    	logger_exprclasses.debug(print_str('Symbol Library:', self.symbol_library))
 
     def run_operation(self, op_name, *args, **kwargs):
         if op_name == 'addition':
@@ -73,6 +79,7 @@ class ExpressionWriter:
 class PythonExpression(ExpressionWriter):
     def __init__(self, *args, **kwargs):
         self.expr = ""
+        self.symbol_library = {}
 
     def __str__(self):
         return 'PythonExpression("{}")'.format(self.expr)
@@ -81,7 +88,7 @@ class PythonExpression(ExpressionWriter):
         if not isinstance(expr, str):
             raise ValueError("Python expressions must be written in strings")
 
-        self.expr = '({})'.format(expr)
+        self.expr = '{}'.format(expr)
         return self.expr
 
     # TODO: Once SympyExpression begins implementation, determine what part of this method
@@ -127,6 +134,7 @@ class PythonExpression(ExpressionWriter):
         if sym is None:
             raise ValueError("'sym' argument not given.")
         self.expr = sym
+        self.register_symbol(sym, sym)
 
     def addition(self, *args, **kwargs):
         return self.create_expression('+', *args, **kwargs)
@@ -159,6 +167,7 @@ class SympyExpression(ExpressionWriter):
     def __init__(self, *args, **kwargs):
         self.expr = None
         self.evaluate = kwargs.get('evaluate', False)
+        self.symbol_library = {}
 
     def __str__(self):
         return 'SympyExpression("{}")'.format(self.expr)
@@ -204,6 +213,7 @@ class SympyExpression(ExpressionWriter):
         if sym is None:
             raise ValueError("'sym' argument not given.")
         self.expr = Symbol(sym)
+        self.register_symbol(sym, self.expr)
 
     def addition(self, *args, **kwargs):
         (args, kwargs) = self.argcheck(*args, **kwargs)

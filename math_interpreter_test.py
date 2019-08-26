@@ -138,6 +138,10 @@ def test_mathml_python_expression_06_basic_symbols():
     py_expr = expr_instance.expr
     assert py_expr == scorrect, "Basic symbols expressions don't match"
 
+    # All symbols registered
+    syms_registered = (x in ('x','y','z') for x in expr_instance.symbol_library)
+    assert all(syms_registered)
+
 def test_mathml_python_expression_07_basic_equation():
     # 1 + 2 - 3
     scorrect = '1 + 2 - 3 = 0'
@@ -173,6 +177,27 @@ def test_mathml_python_expression_08_basic_power():
     py_expr = expr_instance.expr
     assert py_expr == scorrect, "Basic operands expressions don't match"
 
+def test_mathml_python_expression_09_basic_subscript():
+    # 2 ** 3 -> 8
+    scorrect = 'P_{0}'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <msub>
+        <mrow>
+          <mi> P </mi>
+        </mrow>
+        <mrow>
+          <mn> 0 </mn>
+        </mrow>
+      </msub>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=PythonExpression)
+    py_expr = expr_instance.expr
+    assert py_expr == scorrect, "Basic subscript expressions don't match"
+
+    # All symbols registered
+    syms_registered = (x in ('P_{0}',) for x in expr_instance.symbol_library)
+    assert all(syms_registered)
 
 ### SympyExpression Tests ###########
 
@@ -207,6 +232,10 @@ def test_mathml_sympy_expression_02_basic_symbols():
     sympy_expr = expr_instance.expr
     assert str(sympy_expr) == scorrect, "Basic SymPy operands expressions don't match"
 
+    # All symbols registered
+    syms_registered = (x in ('x','y','z') for x in expr_instance.symbol_library)
+    assert all(syms_registered)
+
 def test_mathml_sympy_expression_03_basic_equation():
     # 1 + 2 - 3
     scorrect = 'Eq(x + y, 3)'
@@ -221,6 +250,10 @@ def test_mathml_sympy_expression_03_basic_equation():
     expr_instance = intp.get_expression(s, Expr=SympyExpression)
     sympy_expr = expr_instance.expr
     assert str(sympy_expr) == scorrect, "Basic equations expressions don't match"
+
+    # All symbols registered
+    syms_registered = (x in ('x','y') for x in expr_instance.symbol_library)
+    assert all(syms_registered)
 
 def test_mathml_sympy_expression_04_basic_power():
     # 2 ** 3 -> 8
@@ -256,7 +289,11 @@ def test_mathml_sympy_expression_05_basic_subscript():
     intp = MathMLInterpreter()
     expr_instance = intp.get_expression(s, Expr=SympyExpression)
     sympy_expr = expr_instance.expr
-    assert str(sympy_expr) == scorrect, "Basic power expressions don't match"
+    assert str(sympy_expr) == scorrect, "Basic subscript expressions don't match"
+
+    # All symbols registered
+    syms_registered = (x in ('P_{0}') for x in expr_instance.symbol_library)
+    assert all(syms_registered)
 
 def test_mathml_sympy_expression_06_division_subscript():
     # 2 ** 3 -> 8
@@ -281,5 +318,8 @@ def test_mathml_sympy_expression_06_division_subscript():
     intp = MathMLInterpreter()
     expr_instance = intp.get_expression(s, Expr=SympyExpression)
     sympy_expr = expr_instance.expr
-    assert str(sympy_expr) == scorrect, "Basic power expressions don't match"
+    assert str(sympy_expr) == scorrect, "Division subscript expressions don't match"
+    # All symbols registered
+    syms_registered = (x in ('P','P_{0}') for x in expr_instance.symbol_library)
+    assert all(syms_registered)
 
