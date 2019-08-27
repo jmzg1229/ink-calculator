@@ -23,6 +23,9 @@ class SympyAnalysis:
         if syms is None:
             syms = self.symbols
 
+        if len(syms) == 0:
+            raise ValueError("No symbols to check linearity against")
+
         linearity = {}
         for s in syms:
             linearity[s] = (sympy.diff(self.expr,s,s) == 0)
@@ -33,6 +36,9 @@ class SympyAnalysis:
         # Checks if expressions are fully linear
         if syms is None:
             syms = self.symbols
+
+        if len(syms) == 0:
+            raise ValueError("No symbols to check linearity against")
 
         linearity_dict = {}
         for s in syms:

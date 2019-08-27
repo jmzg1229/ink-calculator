@@ -1,8 +1,16 @@
+import logging
+logger_solverclasses = logging.getLogger(__name__)
+logger_solverclasses.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler('log_{}.txt'.format(__name__))
+formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(name)s : %(message)s')
+file_handler.setFormatter(formatter)
+logger_solverclasses.addHandler(file_handler)
 
 import copy
 import sympy
 from sympy import symbols, Eq, solveset, solve, linsolve, nonlinsolve
 
+from utils import print_str
 from analysis_classes import SympyAnalysis
 
 class SympySolver:
@@ -35,8 +43,17 @@ class SympySolver:
     def set_bounds(self, bounds):
         pass
 
-    def subs(self, sym, val, *args, **kwargs):
-        inplace = kwargs.get('inplace', False)
+    def figure_out(self):
+        syms = self.symbols()
+        num_syms = len(syms)
+
+        expr_group = self.expr_group
+        num_expr = len(expr_group)
+
+        num_expr_w_symbols = len((e for e in expr_group if len(e.free_symbols) > 0))
+        raise NotImplementedError("Will figure out later")
+
+    def subs(self, sym, val, inplace=False, *args, **kwargs):
 
         expr_subs_group = []
         for i in range(len(self.expr_group)):
@@ -46,6 +63,18 @@ class SympySolver:
         if inplace:
             self.set_expression_group(expr_subs_group)
         return expr_subs_group
+
+    def evalf(self, inplace=False, *args, **kwargs):
+
+        expr_evalf_group = []
+        for i in range(len(self.expr_group)):
+            expr = self.expr_group[i]
+            expr_evalf = expr.evalf(*args, **kwargs)
+            expr_evalf_group.append(expr_evalf)
+        if inplace:
+            self.set_expression_group(expr_evalf_group)
+        return expr_evalf_group
+
 
     def is_linear(self, syms=None):
         # Returns whether system is linear for ALL of the given symbols
@@ -57,17 +86,26 @@ class SympySolver:
         if syms is None:
             syms = self.symbols()
 
+        if len(syms) == 0:
+            logger_solverclasses.debug("Symbolless expression")
+            raise ValueError("No symbols to solve for")
+
         num_expr = len(self.expr_group)
         if num_expr == 1:
+            logger_solverclasses.debug("Only 1 expression given")
             return solveset(self.expr_group[0], syms, *args, **kwargs)
 
         linear = self.is_linear(syms)
         if linear:
+            logger_solverclasses.debug("Linear Expressions")
             sol = linsolve(self.expr_group, syms)
             return sol
         else:
-            raise NotImplementedError("Nonlinear solvers")
-            sol = nonlinsolve(self.expr_group, syms)
+            logger_solverclasses.debug("Nonlinear Expressions")
+            logger_solverclasses.debug(print_str('Symbols:', syms))
+            logger_solverclasses.debug(print_str('Expressions:', self.expr_group))
+            sol = nonlinsolve(self.expr_group, list(syms))
+            logger_solverclasses.debug(print_str('Solution:', sol))
             return sol
             
 

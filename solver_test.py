@@ -73,13 +73,15 @@ def test_linear_solver():
     assert sol == sol_correct , "Linear solver failed"
 
 def test_nonlinear_solver():
+    # WHy is it so problematic to compare FiniteSets???
     x,y = symbols('x, y')
     e1 = x*y - 1
     e2 = 4*x**2 + y**2 - 5
     egroup = [e1, e2]
     esolver = SympySolver(egroup)
     sol = esolver.solve()
-    sol_correct_dict = {x: (-1,-1/2,1/2,1), y: (-1,-2,2,1)}
+    sol_correct_dict = {x: (-1.0,-1/2,1/2,1.), y: (-1.,-2.,2.,1.)}
     sol_correct_tuple= tuple(sol_correct_dict[s] for s in esolver.symbols())
-    sol_correct = FiniteSet(tuple(t for t in zip(*sol_correct_tuple)))
-    assert sol == sol_correct , "Nonlinear solver failed"
+    sol_correct = FiniteSet(*tuple(t for t in zip(*sol_correct_tuple)))
+    sol_float = FiniteSet(*(tuple(float(n) for n in s) for s in sol))
+    assert sol_float == sol_correct , "Nonlinear solver failed"
