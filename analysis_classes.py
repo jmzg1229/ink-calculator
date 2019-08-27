@@ -3,6 +3,13 @@ import sympy
 from sympy import symbols
 
 class SympyAnalysis:
+    expr_rel_classes = {sympy.Eq: 'equality',
+                        sympy.Ne: 'unequality',
+                        sympy.Lt: 'less than',
+                        sympy.Le: 'less equal',
+                        sympy.Gt: 'greater than',
+                        sympy.Ge: 'greater equal'}
+
     def __init__(self, expr):
         self.set_expr(expr)
         self.symbols = self.expr.free_symbols
@@ -13,8 +20,12 @@ class SympyAnalysis:
         if not isinstance(expr, tuple(sympy.core.all_classes)):
             raise ValueError(f"Given expression is not Sympy type but '{type(expr)}' type")
         
+        self.rel_type = self.expr_rel_classes.get(type(expr), None)
+
         if isinstance(expr, sympy.relational.Relational):
-            self.expr = expr.rewrite(sympy.Add)
+            if self.rel_type == None:
+                raise NotImplementedError(f"Type '{type(expr)}' relational class")
+            self.expr = expr.lhs - expr.rhs
         else:
             self.expr = expr
 

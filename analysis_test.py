@@ -1,7 +1,7 @@
 import pytest
 
 import sympy
-from sympy import symbols, Eq, Number
+from sympy import symbols, Number, Eq
 
 from analysis_classes import SympyAnalysis
 
@@ -10,12 +10,33 @@ def test_init_no_errors():
     expr = x + 2
     expr_analysis = SympyAnalysis(expr)
 
+def test_relational_detection():
+    from sympy import Eq, Ne, Lt, Le, Gt, Ge
+    x,y = symbols('x y')
+    expr = x + y
+    assert SympyAnalysis(Eq(expr)).rel_type == 'equality'
+    assert SympyAnalysis(Ne(expr, 0)).rel_type == 'unequality'
+    assert SympyAnalysis(Lt(expr, 0)).rel_type == 'less than'
+    assert SympyAnalysis(Le(expr, 0)).rel_type == 'less equal'
+    assert SympyAnalysis(Gt(expr, 0)).rel_type == 'greater than'
+    assert SympyAnalysis(Ge(expr, 0)).rel_type == 'greater equal'
+
 def test_equation_rewritten():
     x,y = symbols('x y')
     expr = x + y
     equ = Eq(expr, 2)
     equ_analysis = SympyAnalysis(equ)
+    assert equ_analysis.rel_type == 'equality', "Equality relation not detected"
     assert str(equ_analysis.expr) == 'x + y - 2', "Equation not rewritten into expression"
+
+def test_inequality_rewritten():
+    from sympy import Lt
+    x,y = symbols('x y')
+    expr = x + y
+    equ = Lt(expr, 2)
+    equ_analysis = SympyAnalysis(equ)
+    assert equ_analysis.rel_type == 'less than', "'less than' relation not detected"
+    assert str(equ_analysis.expr) == 'x + y - 2', "Relation not rewritten into expression"
 
 def test_linearity_calculation():
     x,y = symbols('x y')
