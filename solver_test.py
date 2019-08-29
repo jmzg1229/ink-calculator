@@ -85,3 +85,20 @@ def test_nonlinear_solver():
     sol_correct = FiniteSet(*tuple(t for t in zip(*sol_correct_tuple)))
     sol_float = FiniteSet(*(tuple(float(n) for n in s) for s in sol))
     assert sol_float == sol_correct , "Nonlinear solver failed"
+
+def test_isentropic_pressure_solve():
+    # Just cause to check.
+    digit_round = 4
+    P,P0,M,g = symbols('P P0 M g')
+    e1 = g - 1.4
+    e2 = M - 3
+    e3 = P0 - 1
+    e4 = P/P0 - (1 + (g-1)/2*M**2)**(-g/(g-1))
+    egroup = [e1, e2, e3, e4]
+    esolver = SympySolver(egroup)
+    sol = esolver.solve()
+    sol_correct_dict = {g: (1.4,), M: (3.,), P0: (1.,), P: (.0272,)}
+    sol_correct_tuple= tuple(sol_correct_dict[s] for s in esolver.symbols())
+    sol_correct = FiniteSet(*tuple(t for t in zip(*sol_correct_tuple)))
+    sol_float = FiniteSet(*(tuple(round(float(n),digit_round) for n in s) for s in sol))
+    assert sol_float == sol_correct , "Nonlinear Isentropic solver failed"
