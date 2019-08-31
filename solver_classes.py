@@ -50,7 +50,33 @@ class SympySolver:
         expr_group = self.expr_group
         num_expr = len(expr_group)
 
-        num_expr_w_symbols = len((e for e in expr_group if len(e.free_symbols) > 0))
+        expr_has_syms = tuple(len(e.free_symbols) > 0 for e in expr_group)
+        num_expr_w_symbols = sum(expr_has_syms)
+        num_expr_wo_symbols = num_expr - num_expr_w_symbols
+
+        # Compare fraction of expressions with symbols
+        logger_solverclasses.debug(f"{num_syms} symbols; {num_expr_w_symbols} exprs with symbols")
+        if num_expr_w_symbols == num_syms:
+            logger_solverclasses.debug("Minimum expressions given for symbols")
+        elif num_expr_w_symbols < num_syms:
+            logger_solverclasses.debug("Insufficient expressions given for symbols")
+        else:
+            logger_solverclasses.debug("Extra expressions given for symbols")
+
+        for i in range(num_expr):
+            expr = expr_group[i]
+            expr_analysis = self.analysis_group[i]
+
+            # Evaluate if has no symbols
+            if not expr_has_syms[i]:
+                expr = expr.doit()
+
+            # Evaluate if it's just an unrelational expression to be evaluated
+            if expr_analysis.rel_type is None:
+                expr = expr.doit()
+
+            expr_group[i] = expr
+
         raise NotImplementedError("Will figure out later")
 
     def subs(self, sym, val, inplace=False, *args, **kwargs):
@@ -83,6 +109,7 @@ class SympySolver:
         return all(a.is_linear(syms) for a in self.analysis_group)
 
     def solve(self, syms=None, *args, **kwargs):
+        # TODO: What happens if an irrelevant expression is given?
         if syms is None:
             syms = self.symbols()
 
