@@ -20,7 +20,9 @@ class SympyAnalysis:
         if not isinstance(expr, tuple(sympy.core.all_classes)):
             raise ValueError(f"Given expression is not Sympy type but '{type(expr)}' type")
         
-        self.rel_type = self.expr_rel_classes.get(type(expr), None)
+        
+        self.rel_name = self.expr_rel_classes.get(type(expr), None)
+        self.rel_type = type(expr) if self.rel_name != None else None
 
         if isinstance(expr, sympy.relational.Relational):
             if self.rel_type == None:
@@ -28,6 +30,12 @@ class SympyAnalysis:
             self.expr = expr.lhs - expr.rhs
         else:
             self.expr = expr
+
+    def get_rel_expr(self):
+        if self.rel_name is None:
+            raise ValueError("No relation present in expression")
+        else:
+            return self.rel_type(self.expr, 0)
 
     def is_partially_linear(self, syms=None):
         # Checks partial linearity of expression for given symbols

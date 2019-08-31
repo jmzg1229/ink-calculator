@@ -14,19 +14,41 @@ def test_relational_detection():
     from sympy import Eq, Ne, Lt, Le, Gt, Ge
     x,y = symbols('x y')
     expr = x + y
-    assert SympyAnalysis(Eq(expr)).rel_type == 'equality'
-    assert SympyAnalysis(Ne(expr, 0)).rel_type == 'unequality'
-    assert SympyAnalysis(Lt(expr, 0)).rel_type == 'less than'
-    assert SympyAnalysis(Le(expr, 0)).rel_type == 'less equal'
-    assert SympyAnalysis(Gt(expr, 0)).rel_type == 'greater than'
-    assert SympyAnalysis(Ge(expr, 0)).rel_type == 'greater equal'
+    assert SympyAnalysis(expr).rel_name == None
+    assert SympyAnalysis(Eq(expr)).rel_name == 'equality'
+    assert SympyAnalysis(Ne(expr, 0)).rel_name == 'unequality'
+    assert SympyAnalysis(Lt(expr, 0)).rel_name == 'less than'
+    assert SympyAnalysis(Le(expr, 0)).rel_name == 'less equal'
+    assert SympyAnalysis(Gt(expr, 0)).rel_name == 'greater than'
+    assert SympyAnalysis(Ge(expr, 0)).rel_name == 'greater equal'
+
+    assert SympyAnalysis(expr).rel_type == None
+    assert SympyAnalysis(Eq(expr)).rel_type == Eq
+    assert SympyAnalysis(Ne(expr, 0)).rel_type == Ne
+    assert SympyAnalysis(Lt(expr, 0)).rel_type == Lt
+    assert SympyAnalysis(Le(expr, 0)).rel_type == Le
+    assert SympyAnalysis(Gt(expr, 0)).rel_type == Gt
+    assert SympyAnalysis(Ge(expr, 0)).rel_type == Ge
+
+def test_relational_return():
+    from sympy import Eq, Ne, Lt, Le, Gt, Ge
+    x,y = symbols('x y')
+    expr = x + y
+    with pytest.raises(Exception):
+        SympyAnalysis(expr).get_rel_expr()
+    assert SympyAnalysis(Eq(expr)).get_rel_expr() == Eq(expr)
+    assert SympyAnalysis(Ne(expr, 0)).get_rel_expr() == Ne(expr, 0)
+    assert SympyAnalysis(Lt(expr, 0)).get_rel_expr() == Lt(expr, 0)
+    assert SympyAnalysis(Le(expr, 0)).get_rel_expr() == Le(expr, 0)
+    assert SympyAnalysis(Gt(expr, 0)).get_rel_expr() == Gt(expr, 0)
+    assert SympyAnalysis(Ge(expr, 0)).get_rel_expr() == Ge(expr, 0)
 
 def test_equation_rewritten():
     x,y = symbols('x y')
     expr = x + y
     equ = Eq(expr, 2)
     equ_analysis = SympyAnalysis(equ)
-    assert equ_analysis.rel_type == 'equality', "Equality relation not detected"
+    assert equ_analysis.rel_name == 'equality', "Equality relation not detected"
     assert str(equ_analysis.expr) == 'x + y - 2', "Equation not rewritten into expression"
 
 def test_inequality_rewritten():
@@ -35,7 +57,7 @@ def test_inequality_rewritten():
     expr = x + y
     equ = Lt(expr, 2)
     equ_analysis = SympyAnalysis(equ)
-    assert equ_analysis.rel_type == 'less than', "'less than' relation not detected"
+    assert equ_analysis.rel_name == 'less than', "'less than' relation not detected"
     assert str(equ_analysis.expr) == 'x + y - 2', "Relation not rewritten into expression"
 
 def test_linearity_calculation():
