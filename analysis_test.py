@@ -3,7 +3,7 @@ import pytest
 import sympy
 from sympy import symbols, Number, Eq
 
-from analysis_classes import SympyAnalysis
+from analysis_classes import SympyAnalysis, SympyGroupAnalysis
 
 def test_init_no_errors():
     x = symbols('x')
@@ -96,3 +96,27 @@ def test_constant_calculation():
     expr2_constant_correct = True
     assert expr_constant_result == expr_constant_correct, "Constancy not calculated correctly"
     assert expr2_constant_result== expr2_constant_correct,"Constancy not detected"
+
+def test_get_properties():
+    x = symbols('x')
+    expr = x + 2
+    expr_analysis = SympyAnalysis(expr)
+    properties = expr_analysis.get_properties(['is_constant'])
+    assert properties['is_constant'] is False, "Constancy not received."
+
+def test_basic_group_analysis():
+    x,y = symbols('x y')
+    expr = x + y
+    equ = Eq(expr, 2)
+    expr_group = [equ]
+    group_analysis = SympyGroupAnalysis(expr_group)
+    assert(group_analysis.symbols == set([x, y]))
+
+def test_group_nonrepeating_symbols():
+    x,y = symbols('x y')
+    expr = x + y
+    equ = Eq(expr, 2)
+    equ2 = Eq(x - y, 3)
+    expr_group = [equ, equ2]
+    group_analysis = SympyGroupAnalysis(expr_group)
+    assert(group_analysis.symbols == set([x, y]))

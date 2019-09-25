@@ -11,7 +11,7 @@ import sympy
 from sympy import symbols, Eq, solveset, solve, linsolve, nonlinsolve
 
 from utils import print_str
-from analysis_classes import SympyAnalysis
+from analysis_classes import SympyAnalysis, SympyGroupAnalysis
 
 class SympySolver:
     # Seeks to solve the system of equations towards zero
@@ -44,25 +44,29 @@ class SympySolver:
         pass
 
     def figure_out(self):
+
+        # Symbols
         syms = self.symbols()
         num_syms = len(syms)
+        has_syms = (num_syms > 0)
 
+        # Expression group
         expr_group = self.expr_group
         num_expr = len(expr_group)
+        has_expr = (num_expr > 0)
 
+        # Check if has symbols
         expr_has_syms = tuple(len(e.free_symbols) > 0 for e in expr_group)
         num_expr_w_symbols = sum(expr_has_syms)
         num_expr_wo_symbols = num_expr - num_expr_w_symbols
 
-        # Compare fraction of expressions with symbols
-        logger_solverclasses.debug(f"{num_syms} symbols; {num_expr_w_symbols} exprs with symbols")
-        if num_expr_w_symbols == num_syms:
-            logger_solverclasses.debug("Minimum expressions given for symbols")
-        elif num_expr_w_symbols < num_syms:
-            logger_solverclasses.debug("Insufficient expressions given for symbols")
-        else:
-            logger_solverclasses.debug("Extra expressions given for symbols")
+        # Some analysis
+        if not has_expr:
+            raise ValueError("No expressions given. What am I supposed to 'figure out'???")
+        only_evals = (not has_syms)
 
+
+        # Iterate through expressions individually
         for i in range(num_expr):
             expr = expr_group[i]
             expr_analysis = self.analysis_group[i]
@@ -75,8 +79,10 @@ class SympySolver:
             if expr_analysis.rel_type is None:
                 expr = expr.doit()
 
+            # Overwrite expression
             expr_group[i] = expr
 
+        # Not done figuring this one out yet
         raise NotImplementedError("Will figure out later")
 
     def subs(self, sym, val, inplace=False, *args, **kwargs):

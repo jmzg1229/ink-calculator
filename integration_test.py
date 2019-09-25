@@ -22,6 +22,7 @@ def test_most_basic_evaluation():
     # Analyze expression
     expr_analysis = SympyAnalysis(sympy_expr)
     assert expr_analysis.is_constant(), "Expression constancy detection failed"
+    assert expr_analysis.is_evaluable(),"Expression evaluability detection failed"
 
     # Evaluate
     solver = SympySolver([sympy_expr])

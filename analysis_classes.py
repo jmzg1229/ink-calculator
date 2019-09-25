@@ -12,14 +12,11 @@ class SympyAnalysis:
 
     def __init__(self, expr):
         self.set_expr(expr)
-        self.symbols = self.expr.free_symbols
-        pass
 
     def set_expr(self, expr):
         # Set the expression to be analyzed
         if not isinstance(expr, tuple(sympy.core.all_classes)):
             raise ValueError(f"Given expression is not Sympy type but '{type(expr)}' type")
-        
         
         self.rel_name = self.expr_rel_classes.get(type(expr), None)
         self.rel_type = type(expr) if self.rel_name != None else None
@@ -30,6 +27,9 @@ class SympyAnalysis:
             self.expr = expr.lhs - expr.rhs
         else:
             self.expr = expr
+
+        self.symbols = self.expr.free_symbols
+
 
     def get_rel_expr(self):
         if self.rel_name is None:
@@ -77,6 +77,50 @@ class SympyAnalysis:
                 return False
         return True
 
+    def has_symbols(self):
+        # Checks if expression has any unevaluated symbols
+        return (len(self.symbols) > 0)
+
+    def is_evaluable(self):
+        return self.is_constant()
+
+    def is_relational(self):
+        return (self.rel_name is not None)
+
+    property_funs = { 'has_symbols': has_symbols,
+                      'is_constant': is_constant,
+                      'is_evaluable':is_evaluable,
+                      'is_linear':   is_linear,
+                      'is_linear_detailed': lambda: is_linear(detailed=True),
+                      'is_partially_linear': is_partially_linear,
+                      'is_relational': is_relational}
+
+    def get_properties(self, property_names):
+        properties = {n: self.property_funs[n](self) for n in property_names}
+        return properties
+
+
+class SympyGroupAnalysis:
+    def __init__(self, expr_group):
+        self.set_expr_group(expr_group)
+
+    def set_expr_group(self, expr_group):
+        self.expr_group = expr_group
+        self.num_expr = len(self.expr_group)
+        if self.num_expr > 1:
+            pass
+        elif self.num_expr == 0:
+            raise ValueError("No expressions given!")
+
+        self.analysis_group = []
+        self.symbols = set()
+        for expr in expr_group:
+            expr_analysis = SympyAnalysis(expr)
+            expr_syms = expr_analysis.symbols
+
+            self.analysis_group.append(expr_analysis)
+            self.symbols.update(expr_syms)
+        pass
 
 
 
