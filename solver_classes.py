@@ -107,13 +107,6 @@ class SympySolver:
             self.set_expression_group(expr_evalf_group)
         return expr_evalf_group
 
-
-    def is_linear(self, syms=None):
-        # Returns whether system is linear for ALL of the given symbols
-        if syms is None:
-            syms = self.symbols()
-        return all(a.is_linear(syms) for a in self.analysis_group)
-
     def solve(self, syms=None, *args, **kwargs):
         # TODO: What happens if an irrelevant expression is given?
         if syms is None:

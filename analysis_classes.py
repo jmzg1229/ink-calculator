@@ -102,6 +102,9 @@ class SympyAnalysis:
 
 class SympyGroupAnalysis:
     def __init__(self, expr_group):
+        self.num_expr = 0
+        self.analysis_group = []
+        self.symbols = set()
         self.set_expr_group(expr_group)
 
     def set_expr_group(self, expr_group):
@@ -114,13 +117,42 @@ class SympyGroupAnalysis:
 
         self.analysis_group = []
         self.symbols = set()
-        for expr in expr_group:
-            expr_analysis = SympyAnalysis(expr)
-            expr_syms = expr_analysis.symbols
+        for i in range(self.num_expr):
+            expr = expr_group[i]
+            self.add_expr(expr)
+        pass
 
+    def update_symbols(self):
+        self.symbols = set()
+        for i in range(self.num_expr):
+            expr_syms = self.analysis_group[i].symbols
+            self.symbols.update(expr_syms)
+
+    def add_expr(self, expr):
+        self.expr_group.append(expr)
+        self.set_expr(self.num_expr, expr)
+
+    def set_expr(self, idx, expr):
+        if (idx > self.num_expr) or (idx < -self.num_expr):
+            raise ValueError("Index out of bounds")
+
+        expr_analysis = SympyAnalysis(expr)
+        expr_syms = expr_analysis.symbols
+
+        if (idx == self.num_expr):
+            # Add a new expression
+            self.num_expr += 1
             self.analysis_group.append(expr_analysis)
             self.symbols.update(expr_syms)
-        pass
+        else:
+            self.analysis_group[idx] = expr_analysis
+            self.update_symbols()
+
+    def is_linear(self, syms=None):
+        # Returns whether system is linear for ALL of the given symbols
+        if syms is None:
+            syms = self.symbols
+        return all(a.is_linear(syms) for a in self.analysis_group)
 
 
 

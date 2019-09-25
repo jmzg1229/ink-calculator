@@ -120,3 +120,12 @@ def test_group_nonrepeating_symbols():
     expr_group = [equ, equ2]
     group_analysis = SympyGroupAnalysis(expr_group)
     assert(group_analysis.symbols == set([x, y]))
+
+def test_linear_system_detection():
+    x,y,z = symbols('x, y, z')
+    e1 = x + 2
+    e2 = y + z
+    e3 = z - x
+    egroup = [e1, e2, e3]
+    eanalysis = SympyGroupAnalysis(egroup)
+    assert eanalysis.is_linear(), "Linearity of system not detected"
