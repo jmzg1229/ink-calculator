@@ -129,3 +129,16 @@ def test_linear_system_detection():
     egroup = [e1, e2, e3]
     eanalysis = SympyGroupAnalysis(egroup)
     assert eanalysis.is_linear(), "Linearity of system not detected"
+
+def test_basic_solvability_detection():
+    from sympy import Add, Mul, Pow
+    e1 = Add(2, 2, evaluate=False)
+    e2 = Mul(2, 3, evaluate=False)
+    e3 = Pow(2, 4, evaluate=False)
+    egroup = [e1, e2, e3]
+    eanalysis = SympyGroupAnalysis(egroup)
+    assert eanalysis.num_expr == 3, "Wrong number of expressions"
+    (solvable, sol_type_idx, unsolvable_idx) = eanalysis.is_solvable()
+    assert solvable, "solvability not detected"
+    assert sol_type_idx == {'evaluable': [0,1,2]}, "Solvability types not calculated correctly"
+    assert unsolvable_idx == [], "Unsolvable indexes not filtered out"

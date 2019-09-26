@@ -109,15 +109,14 @@ class SympyGroupAnalysis:
 
     def set_expr_group(self, expr_group):
         self.expr_group = expr_group
-        self.num_expr = len(self.expr_group)
-        if self.num_expr > 1:
-            pass
-        elif self.num_expr == 0:
+        num_expr = len(self.expr_group)
+        if num_expr == 0:
             raise ValueError("No expressions given!")
 
+        self.num_expr = 0
         self.analysis_group = []
         self.symbols = set()
-        for i in range(self.num_expr):
+        for i in range(num_expr):
             expr = expr_group[i]
             self.add_expr(expr)
         pass
@@ -153,6 +152,22 @@ class SympyGroupAnalysis:
         if syms is None:
             syms = self.symbols
         return all(a.is_linear(syms) for a in self.analysis_group)
+
+    def is_solvable(self):
+        # Checks if system can be figured out
+        expr_idx = list(range(self.num_expr))
+
+        # Evaluable parts
+        eval_idx = []
+        for i in expr_idx:
+            if self.analysis_group[i].is_evaluable():
+                eval_idx.append(i)
+        expr_idx = [e for e in expr_idx if e not in eval_idx]
+
+        # Rest of unknowns
+        solvable = (len(expr_idx) == 0)
+        return (solvable, {'evaluable': eval_idx}, expr_idx)
+
 
 
 
