@@ -18,18 +18,18 @@ class SympySolver:
     def __init__(self, expr_group):
         # expr_group being a container for the expressions to be solved
         self.set_expression_group(expr_group)
+        logger_solverclasses.debug(expr_group)
         pass
 
     def set_expression_group(self, expr_group):
         if len(expr_group) == 0:
             raise ValueError("No expressions were given.")
 
-        self.analysis_group = []
-        for i in range(len(expr_group)):
-            expr = expr_group[i]
-            self.analysis_group.append(SympyAnalysis(expr))
+        logger_solverclasses.debug(expr_group)
+        self.analysis_group = SympyGroupAnalysis(expr_group)
 
         self.expr_group = expr_group
+        logger_solverclasses.debug(expr_group)
 
     def symbols(self):
         syms = set()

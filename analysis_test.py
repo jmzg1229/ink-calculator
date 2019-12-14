@@ -104,13 +104,15 @@ def test_get_properties():
     properties = expr_analysis.get_properties(['is_constant'])
     assert properties['is_constant'] is False, "Constancy not received."
 
-def test_basic_group_analysis():
+def test_group_analysis_init():
     x,y = symbols('x y')
     expr = x + y
     equ = Eq(expr, 2)
     expr_group = [equ]
     group_analysis = SympyGroupAnalysis(expr_group)
     assert(group_analysis.symbols == set([x, y]))
+    assert(len(group_analysis.analysis_group) == 1)
+    assert False # Lol the num of expr kinda doubles here
 
 def test_group_nonrepeating_symbols():
     x,y = symbols('x y')
@@ -129,6 +131,14 @@ def test_linear_system_detection():
     egroup = [e1, e2, e3]
     eanalysis = SympyGroupAnalysis(egroup)
     assert eanalysis.is_linear(), "Linearity of system not detected"
+
+def test_nonlinear_system_detection():
+    x,y = symbols('x, y')
+    e1 = x*y - 1
+    e2 = 4*x**2 + y**2 - 5
+    egroup = [e1, e2]
+    eanalysis = SympyGroupAnalysis(egroup)
+    assert not eanalysis.is_linear(), "Nonlinearity of system not detected"
 
 def test_basic_solvability_detection():
     from sympy import Add, Mul, Pow

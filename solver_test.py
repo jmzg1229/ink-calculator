@@ -6,13 +6,17 @@ from sympy import symbols, Eq, Number, FiniteSet
 from analysis_classes import SympyAnalysis
 from solver_classes import SympySolver
 
-def test_init_runs():
+def test_solver_init():
     x,y,z = symbols('x, y, z')
     e1 = x + 2
     e2 = y + z
     e3 = z - x
     egroup = [e1, e2, e3]
+    print(egroup)
     esolver = SympySolver(egroup)
+    print(egroup)
+    assert(len(egroup) == 3)
+    assert(len(esolver.expr_group) == 3)
 
 def test_symbols_found():
     x,y,z = symbols('x, y, z')
@@ -42,23 +46,6 @@ def test_subs_inplace():
     esolver = SympySolver(egroup)
     esolver.subs(x, 2, inplace=True)
     assert esolver.expr_group == [4, y+z, z-2], "Distributed inplace substitution didn't work"
-
-def test_linear_system_detection():
-    x,y,z = symbols('x, y, z')
-    e1 = x + 2
-    e2 = y + z
-    e3 = z - x
-    egroup = [e1, e2, e3]
-    esolver = SympySolver(egroup)
-    assert esolver.is_linear(), "Linearity of system not detected"
-
-def test_nonlinear_system_detection():
-    x,y = symbols('x, y')
-    e1 = x*y - 1
-    e2 = 4*x**2 + y**2 - 5
-    egroup = [e1, e2]
-    esolver = SympySolver(egroup)
-    assert not esolver.is_linear(), "Nonlinearity of system not detected"
 
 def test_linear_solver():
     x,y,z = symbols('x, y, z')
