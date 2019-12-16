@@ -121,7 +121,7 @@ class SympySolver:
             logger_solverclasses.debug("Only 1 expression given")
             return solveset(self.expr_group[0], syms, *args, **kwargs)
 
-        linear = self.is_linear(syms)
+        linear = self.analysis_group.is_linear(syms)
         if linear:
             logger_solverclasses.debug("Linear Expressions")
             sol = linsolve(self.expr_group, syms)

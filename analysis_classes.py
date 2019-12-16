@@ -108,12 +108,12 @@ class SympyGroupAnalysis:
         self.set_expr_group(expr_group)
 
     def set_expr_group(self, expr_group):
-        self.expr_group = expr_group
-        num_expr = len(self.expr_group)
+        num_expr = len(expr_group)
         if num_expr == 0:
             raise ValueError("No expressions given!")
 
         self.num_expr = 0
+        self.expr_group = []
         self.analysis_group = []
         self.symbols = set()
         for i in range(num_expr):

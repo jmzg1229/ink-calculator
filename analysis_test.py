@@ -111,8 +111,8 @@ def test_group_analysis_init():
     expr_group = [equ]
     group_analysis = SympyGroupAnalysis(expr_group)
     assert(group_analysis.symbols == set([x, y]))
-    assert(len(group_analysis.analysis_group) == 1)
-    assert False # Lol the num of expr kinda doubles here
+    assert(group_analysis.num_expr == 1)
+    assert(len(group_analysis.expr_group) == 1)
 
 def test_group_nonrepeating_symbols():
     x,y = symbols('x y')
