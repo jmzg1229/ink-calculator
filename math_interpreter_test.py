@@ -323,3 +323,31 @@ def test_mathml_sympy_expression_06_division_subscript():
     syms_registered = (x in ('P','P_{0}') for x in expr_instance.symbol_library)
     assert all(syms_registered)
 
+def test_mathml_sympy_expression_group_expression():
+    # Groups of expressions: x+y=2, x-y=1
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mtable columnalign='left'>
+        <mtr>
+          <mtd>
+            <mi> x </mi>
+            <mo> + </mo>
+            <mi> y </mi>
+            <mo> = </mo>
+            <mn> 2 </mn>
+          </mtd>
+        </mtr>
+        <mtr>
+          <mtd>
+            <mi> x </mi>
+            <mo> - </mo>
+            <mi> y </mi>
+            <mo> = </mo>
+            <mn> 1 </mn>
+          </mtd>
+        </mtr>
+      </mtable>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=SympyExpression)
+    sympy_expr = expr_instance.expr
+    assert False
