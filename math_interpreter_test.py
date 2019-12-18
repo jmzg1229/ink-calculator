@@ -201,6 +201,17 @@ def test_mathml_python_expression_09_basic_subscript():
 
 ### SympyExpression Tests ###########
 
+def test_mathml_sympy_expression_00_basic_number():
+    # 1 + 2 - 3 -> 0
+    scorrect = '2'
+    s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mn> 2 </mn>
+    </math>"""
+    intp = MathMLInterpreter()
+    expr_instance = intp.get_expression(s, Expr=SympyExpression)
+    sympy_expr = expr_instance.expr
+    assert str(sympy_expr) == scorrect, "Basic SymPy number expressions don't match"
+
 def test_mathml_sympy_expression_01_basic_operands():
     # 1 + 2 - 3 -> 0
     scorrect = '-3 + 1 + 2'
@@ -325,6 +336,7 @@ def test_mathml_sympy_expression_06_division_subscript():
 
 def test_mathml_sympy_expression_group_expression():
     # Groups of expressions: x+y=2, x-y=1
+    scorrect = ['Eq(x + y, 2)', 'Eq(x - y, 1)']
     s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
       <mtable columnalign='left'>
         <mtr>
@@ -349,5 +361,5 @@ def test_mathml_sympy_expression_group_expression():
     </math>"""
     intp = MathMLInterpreter()
     expr_instance = intp.get_expression(s, Expr=SympyExpression)
-    sympy_expr = expr_instance.expr
-    assert False
+    sympy_expr_group = expr_instance
+    assert [str(e.expr) for e in sympy_expr_group] == scorrect

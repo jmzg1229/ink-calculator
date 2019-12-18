@@ -36,7 +36,10 @@ class MathMLInterpreter:
             'mfenced': self.mfenced,
             'mfrac': self.mfrac,
             'msup': self.msup,
-            'msub': self.msub
+            'msub': self.msub,
+            'mtable': self.mtable,
+            'mtr': self.mtr,
+            'mtd': self.mtd
             }
         if elem.tag not in tag_fn_map:
             raise ValueError("MathML tag '{}' not found in Interpreter database".format(elem.tag))
@@ -224,7 +227,54 @@ class MathMLInterpreter:
                 Expr_instance.symbol(sym=sym_name)
                 return Expr_instance
 
-                raise NotImplementedError("'msub' operator")
+            # Table head
+            elif (head_tag == 'mtable'):
+                if len(elems) == 0:
+                    raise ValueError("Table is empty")
+
+                if not all(t == 'mtr' for t in tags):
+                    raise NotImplementedError("Tables with tags other than table rows (mtr) in first layer")
+
+                row_exprs = []
+                for row_elem in elems:
+                    row_exp = self.get_expression(row_elem, Expr=Expr)
+                    row_exprs.append(row_exp)
+
+                logger_mathml.debug(print_str("Row exprs (displayed as string):", [str(e) for e in row_exprs]))
+                logger_mathml.info("Returning expression group as list")
+
+                # TODO: Figure out a smarter way of returning a group?
+                expr_group = row_exprs
+                return expr_group
+                #raise NotImplementedError("Moving found expression groups into the group class")
+
+            # Table row head
+            elif (head_tag == 'mtr'):
+                if len(elems) == 0:
+                    raise ValueError("Table row is empty")
+
+                if not all(t == 'mtd' for t in tags):
+                    raise NotImplementedError("Table rows with tags other than table elements (mtd) in first layer")
+
+                if len(elems) > 1:
+                    raise NotImplementedError("Table row with more than one element.")
+
+                elem = elems[0]
+                return self.get_expression(elem, Expr=Expr)
+                #raise NotImplementedError("'mtr' head")
+
+            # Table element head
+            elif (head_tag == 'mtd'):
+                logger_mathml.debug(print_str('mtd tree:', s))
+                if len(elems) == 0:
+                    raise ValueError("Table element is empty")
+                elif len(elems) > 1:
+                    raise ValueError("Table element with more than one element but no operators")
+
+                elem = elems[0]
+                return self.get_expression(elem, Expr=Expr)
+
+                #raise NotImplementedError("'mtd' head")
             
             # Any other heads
             else:
@@ -323,11 +373,19 @@ class MathMLInterpreter:
         assert len(children) == 2
         pass
 
-
     def msup(self, elem):
         raise NotImplementedError
 
     def msub(self, elem):
+        raise NotImplementedError
+
+    def mtable(self, elem):
+        raise NotImplementedError
+
+    def mtd(self, elem):
+        raise NotImplementedError
+
+    def mtr(self, elem):
         raise NotImplementedError
 
     def get_op_name(self, elem):
