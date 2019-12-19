@@ -362,4 +362,4 @@ def test_mathml_sympy_expression_group_expression():
     intp = MathMLInterpreter()
     expr_instance = intp.get_expression(s, Expr=SympyExpression)
     sympy_expr_group = expr_instance
-    assert [str(e.expr) for e in sympy_expr_group] == scorrect
+    assert [str(e) for e in sympy_expr_group] == scorrect

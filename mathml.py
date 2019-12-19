@@ -238,7 +238,7 @@ class MathMLInterpreter:
                 row_exprs = []
                 for row_elem in elems:
                     row_exp = self.get_expression(row_elem, Expr=Expr)
-                    row_exprs.append(row_exp)
+                    row_exprs.append(row_exp.expr)
 
                 logger_mathml.debug(print_str("Row exprs (displayed as string):", [str(e) for e in row_exprs]))
                 logger_mathml.info("Returning expression group as list")
