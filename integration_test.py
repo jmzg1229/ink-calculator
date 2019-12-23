@@ -7,6 +7,8 @@ from solver_classes import SympySolver
 
 from sympy import FiniteSet
 
+## TODO: Implement reading in expressions and groups using the same code
+
 def test_most_basic_evaluation():
     # Evaluate the most basic math expression of all
     s = """<math xmlns='http://www.w3.org/1998/Math/MathML'>
